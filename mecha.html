@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>龙甲·东方机甲·奇谭 · StoryForge</title>
+<style>
+:root { color-scheme: light; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: "KaiTi", "STKaiti", "楷体", "Noto Serif SC", "Songti SC", serif;
+  background: #f3ead8;
+  color: #3d2e1f;
+  overflow-x: hidden;
+}
+#ink { position: fixed; inset: 0; pointer-events: none; opacity: .55; z-index: 0;
+  background:
+    radial-gradient(ellipse at 12% 18%, rgba(120, 90, 40, .10), transparent 42%),
+    radial-gradient(ellipse at 88% 82%, rgba(120, 90, 40, .09), transparent 45%),
+    radial-gradient(ellipse at 70% 20%, rgba(60, 40, 20, .05), transparent 38%);
+}
+#app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+#topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 22px; border-bottom: 1px solid rgba(90, 70, 40, .22);
+  background: rgba(243, 234, 216, .82); backdrop-filter: blur(4px);
+  position: sticky; top: 0;
+}
+#brand { font-weight: 700; font-size: 17px; letter-spacing: 2px; color: #6b4a26; }
+#brand small { font-weight: 400; font-size: 12px; letter-spacing: 1px; color: #9a7c54; margin-left: 8px; }
+#top-right { display: flex; gap: 10px; align-items: center; }
+.lang-btn {
+  background: none; border: 1px solid rgba(90, 70, 40, .35); color: #5c4527;
+  padding: 4px 12px; border-radius: 14px; cursor: pointer; font-size: 13px;
+  font-family: inherit; transition: all .2s;
+}
+.lang-btn:hover { background: rgba(90, 70, 40, .08); }
+.lang-btn.active { background: #6b4a26; color: #f3ead8; border-color: #6b4a26; }
+#content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+.panel { max-width: 780px; width: 100%; }
+.hidden { display: none !important; }
+
+/* 标题页 */
+#title-panel { text-align: center; }
+#title-main {
+  font-size: clamp(34px, 7vw, 62px); letter-spacing: 10px; color: #4a3218;
+  line-height: 1.35; text-shadow: 0 2px 0 rgba(255,255,255,.5);
+}
+#title-sub { margin-top: 18px; color: #7d6242; font-size: 15px; letter-spacing: 3px; }
+#title-divider {
+  width: 120px; height: 1px; margin: 26px auto; background: linear-gradient(90deg, transparent, #8a6a3f, transparent);
+}
+#title-intro { max-width: 620px; margin: 0 auto 34px; color: #5f4a2e; line-height: 2; font-size: 15.5px; }
+#start-btn {
+  font-family: inherit; font-size: 19px; letter-spacing: 6px; color: #f3ead8;
+  background: linear-gradient(160deg, #7d5a30, #5c3f1e); border: none; cursor: pointer;
+  padding: 14px 58px; border-radius: 4px; box-shadow: 0 6px 18px rgba(80, 55, 25, .35);
+  transition: transform .15s, box-shadow .2s;
+}
+#start-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(80, 55, 25, .42); }
+#title-cast { margin-top: 30px; color: #9a7c54; font-size: 13px; letter-spacing: 2px; }
+
+/* 章节/场景页 */
+#story-panel { position: relative; }
+#chapter-tag {
+  display: inline-block; padding: 5px 16px; border: 1px solid rgba(90, 70, 40, .3);
+  border-radius: 16px; color: #7d6242; font-size: 13px; letter-spacing: 3px; margin-bottom: 18px;
+}
+#scene-text {
+  background: rgba(255, 252, 244, .85); border: 1px solid rgba(90, 70, 40, .16);
+  border-radius: 6px; padding: 30px 34px; line-height: 2.15; font-size: 16.5px;
+  white-space: pre-wrap; box-shadow: 0 4px 20px rgba(90, 70, 40, .08);
+}
+#scene-text .first { font-size: 22px; color: #6b4a26; }
+#choice-label { margin: 26px 0 12px; color: #9a7c54; font-size: 13px; letter-spacing: 4px; }
+#choices { display: flex; flex-direction: column; gap: 12px; }
+.choice-btn {
+  font-family: inherit; text-align: left; font-size: 15.5px; color: #4a3218;
+  background: rgba(255, 252, 244, .7); border: 1px solid rgba(90, 70, 40, .28);
+  padding: 13px 20px; border-radius: 4px; cursor: pointer; transition: all .18s; line-height: 1.7;
+}
+.choice-btn:hover { border-color: #8a6a3f; background: #fffaf0; transform: translateX(4px); }
+
+/* 结局页 */
+#ending-panel { text-align: center; }
+#ending-badge {
+  display: inline-block; padding: 8px 26px; border-radius: 3px; letter-spacing: 6px;
+  background: linear-gradient(160deg, #8a1f1f, #5c1515); color: #f6e9d8; font-size: 17px;
+  box-shadow: 0 6px 16px rgba(90, 25, 25, .3);
+}
+#ending-name { margin-top: 30px; font-size: clamp(26px, 4.5vw, 38px); letter-spacing: 6px; color: #4a3218; }
+#ending-text {
+  margin: 22px auto 0; max-width: 620px; color: #5f4a2e; line-height: 2.15; font-size: 16px;
+  background: rgba(255, 252, 244, .8); border: 1px solid rgba(90, 70, 40, .14);
+  padding: 24px 28px; border-radius: 6px;
+}
+#ending-actions { margin-top: 32px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.small-btn {
+  font-family: inherit; font-size: 15px; letter-spacing: 3px; padding: 10px 30px; cursor: pointer;
+  border-radius: 4px; transition: all .18s;
+}
+.small-btn.primary { background: #6b4a26; color: #f3ead8; border: none; }
+.small-btn.primary:hover { background: #5a3d1f; }
+.small-btn.ghost { background: none; border: 1px solid rgba(90, 70, 40, .35); color: #5c4527; }
+.small-btn.ghost:hover { background: rgba(90, 70, 40, .08); }
+
+#footer { text-align: center; padding: 18px; color: #a38a62; font-size: 12px; letter-spacing: 2px; }
+
+/* 战斗面板 */
+#combat-panel { position: relative; }
+#combat-stage {
+  background: radial-gradient(ellipse at 50% 120%, rgba(90, 60, 20, .18), transparent 60%),
+              linear-gradient(180deg, #efe4cd, #e6d7ba);
+  border: 1px solid rgba(90, 70, 40, .2); border-radius: 6px;
+  padding: 26px 30px; box-shadow: inset 0 0 60px rgba(120, 90, 40, .08);
+}
+#combat-hud { display: flex; justify-content: space-between; gap: 18px; margin-bottom: 20px; }
+.hud-card { flex: 1; background: rgba(255, 252, 244, .72); border: 1px solid rgba(90, 70, 40, .18);
+  border-radius: 4px; padding: 12px 16px; }
+.hud-name { font-size: 15px; letter-spacing: 2px; color: #4a3218; margin-bottom: 8px; }
+.hud-hp-wrap { height: 14px; background: rgba(90, 70, 40, .12); border-radius: 7px; overflow: hidden; }
+.hud-hp { height: 100%; width: 100%; background: linear-gradient(90deg, #a33, #d0544a); border-radius: 7px; transition: width .4s ease; }
+.hud-hp.low { background: linear-gradient(90deg, #7a1f1f, #a33); }
+.hud-hp-num { font-size: 12px; color: #7d6242; margin-top: 5px; text-align: right; }
+#combat-log {
+  min-height: 74px; background: rgba(74, 50, 24, .92); color: #f3ead8;
+  border-radius: 4px; padding: 14px 18px; line-height: 1.9; font-size: 14.5px;
+  margin-bottom: 16px; white-space: pre-wrap;
+}
+#combat-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div id="ink"></div>
+<div id="app">
+  <div id="topbar">
+    <div id="brand">StoryForge<small>文化游戏工坊</small></div>
+    <div id="top-right"><div id="lang-bar"></div></div>
+  </div>
+  <div id="content">
+    <div class="panel" id="title-panel">
+      <h1 id="title-main"></h1>
+      <div id="title-sub"></div>
+      <div id="title-divider"></div>
+      <p id="title-intro"></p>
+      <button id="start-btn">开 始</button>
+      <div id="title-cast"></div>
+    </div>
+    <div class="panel hidden" id="story-panel">
+      <span id="chapter-tag"></span>
+      <div id="scene-text"></div>
+      <div id="choice-label"></div>
+      <div id="choices"></div>
+    </div>
+    <div class="panel hidden" id="combat-panel">
+      <span id="cb-name" style="display:inline-block;padding:5px 16px;border:1px solid rgba(90,70,40,.3);border-radius:16px;color:#7d6242;font-size:13px;letter-spacing:3px;margin-bottom:18px;"></span>
+      <div id="combat-stage">
+        <div id="combat-hud">
+          <div class="hud-card">
+            <div class="hud-name" id="hud-player-name"></div>
+            <div class="hud-hp-wrap"><div class="hud-hp" id="hp-player-fill"></div></div>
+            <div class="hud-hp-num" id="hp-player-num"></div>
+          </div>
+          <div class="hud-card">
+            <div class="hud-name" id="hud-enemy-name"></div>
+            <div class="hud-hp-wrap"><div class="hud-hp" id="hp-enemy-fill"></div></div>
+            <div class="hud-hp-num" id="hp-enemy-num"></div>
+          </div>
+        </div>
+        <div id="combat-log"></div>
+        <div id="combat-actions"></div>
+      </div>
+    </div>
+    <div class="panel hidden" id="ending-panel">
+      <span id="ending-badge"></span>
+      <h2 id="ending-name"></h2>
+      <div id="ending-text"></div>
+      <div id="ending-actions"></div>
+    </div>
+  </div>
+  <div id="footer">StoryForge · 由 AI 智能体生成的文化互动叙事</div>
+</div>
+<script>
+
+(function () {
+  "use strict";
+  var DATA = {"title": {"zh": "龙甲·东方机甲·奇谭", "en": "龙甲·东方机甲·奇谭", "ja": "龙甲·东方机甲·奇谭", "ko": "龙甲·东方机甲·奇谭"}, "subtitle": {"zh": "文化主题互动叙事 · 由 StoryForge 生成", "en": "文化主题互动叙事 · 由 StoryForge 生成", "ja": "文化主题互动叙事 · 由 StoryForge 生成", "ko": "文化主题互动叙事 · 由 StoryForge 生成"}, "intro": {"zh": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。", "en": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。", "ja": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。", "ko": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。"}, "world": {"zh": "近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "en": "近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "ja": "近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "ko": "近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。"}, "characters": [{"name": {"zh": "老院长", "en": "老院长", "ja": "老院长", "ko": "老院长"}, "desc": {"zh": "龙甲研究院院长，第一代驾驶员，记得每一台机甲的脾性", "en": "龙甲研究院院长，第一代驾驶员，记得每一台机甲的脾性", "ja": "龙甲研究院院长，第一代驾驶员，记得每一台机甲的脾性", "ko": "龙甲研究院院长，第一代驾驶员，记得每一台机甲的脾性"}}, {"name": {"zh": "灵曦", "en": "灵曦", "ja": "灵曦", "ko": "灵曦"}, "desc": {"zh": "机库主管，能徒手调校机甲关节，话少手快", "en": "机库主管，能徒手调校机甲关节，话少手快", "ja": "机库主管，能徒手调校机甲关节，话少手快", "ko": "机库主管，能徒手调校机甲关节，话少手快"}}, {"name": {"zh": "黑翼", "en": "黑翼", "ja": "黑翼", "ko": "黑翼"}, "desc": {"zh": "神秘的新对手，驾驶着一台来历不明的暗色机甲", "en": "神秘的新对手，驾驶着一台来历不明的暗色机甲", "ja": "神秘的新对手，驾驶着一台来历不明的暗色机甲", "ko": "神秘的新对手，驾驶着一台来历不明的暗色机甲"}}], "scenes": {"s0": {"title": {"zh": "序章 · 龙甲·东方机甲", "en": "序章 · 龙甲·东方机甲", "ja": "序章 · 龙甲·东方机甲", "ko": "序章 · 龙甲·东方机甲"}, "text": {"zh": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。\n\n你在龙甲研究院醒来，晨雾未散。近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "en": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。\n\n你在龙甲研究院醒来，晨雾未散。近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "ja": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。\n\n你在龙甲研究院醒来，晨雾未散。近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "ko": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。\n\n你在龙甲研究院醒来，晨雾未散。近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。"}, "next": {"{\"zh\": \"循着人声走向市集\"}": "s1", "{\"zh\": \"先在原地观望片刻\"}": "s2"}}, "s1": {"title": {"zh": "第二章 · 龙甲认主", "en": "第二章 · 龙甲认主", "ja": "第二章 · 龙甲认主", "ko": "第二章 · 龙甲认主"}, "text": {"zh": "你在龙甲研究院觉醒，太极核心与你的心跳同步——老院长说：它选中了你。", "en": "你在龙甲研究院觉醒，太极核心与你的心跳同步——老院长说：它选中了你。", "ja": "你在龙甲研究院觉醒，太极核心与你的心跳同步——老院长说：它选中了你。", "ko": "你在龙甲研究院觉醒，太极核心与你的心跳同步——老院长说：它选中了你。"}, "next": {"{\"zh\": \"向灵曦请教此中缘由\"}": "s2", "{\"zh\": \"不动声色，静观其变\"}": "s3"}}, "s2": {"title": {"zh": "第三章 · 山河试炼", "en": "第三章 · 山河试炼", "ja": "第三章 · 山河试炼", "ko": "第三章 · 山河试炼"}, "text": {"zh": "训练场上，你的龙甲第一次全功率运转。灵曦的声音从通讯里传来：注意你的能量流转。", "en": "训练场上，你的龙甲第一次全功率运转。灵曦的声音从通讯里传来：注意你的能量流转。", "ja": "训练场上，你的龙甲第一次全功率运转。灵曦的声音从通讯里传来：注意你的能量流转。", "ko": "训练场上，你的龙甲第一次全功率运转。灵曦的声音从通讯里传来：注意你的能量流转。"}, "next": {"{\"zh\": \"请黑翼指点迷津\"}": "s3", "{\"zh\": \"凭直觉走自己的路\"}": "s4"}}, "s3": {"title": {"zh": "第四章 · 边境警报", "en": "第四章 · 边境警报", "ja": "第四章 · 边境警报", "ko": "第四章 · 边境警报"}, "text": {"zh": "边境防线告急，不明机甲入侵。老院长交给你一块龙魂玉：机甲认主，使命也就认了主。", "en": "边境防线告急，不明机甲入侵。老院长交给你一块龙魂玉：机甲认主，使命也就认了主。", "ja": "边境防线告急，不明机甲入侵。老院长交给你一块龙魂玉：机甲认主，使命也就认了主。", "ko": "边境防线告急，不明机甲入侵。老院长交给你一块龙魂玉：机甲认主，使命也就认了主。"}, "next": {"{\"zh\": \"向老院长请教此中缘由\"}": "s4", "{\"zh\": \"不动声色，静观其变\"}": "cb"}}, "s4": {"title": {"zh": "第五章 · 古法破敌", "en": "第五章 · 古法破敌", "ja": "第五章 · 古法破敌", "ko": "第五章 · 古法破敌"}, "text": {"zh": "战斗白热化，你想起古法阵图上的武技——以柔克刚，四两拨千斤。", "en": "战斗白热化，你想起古法阵图上的武技——以柔克刚，四两拨千斤。", "ja": "战斗白热化，你想起古法阵图上的武技——以柔克刚，四两拨千斤。", "ko": "战斗白热化，你想起古法阵图上的武技——以柔克刚，四两拨千斤。"}, "next": {"{\"zh\": \"取出随身信物，坦诚相告\"}": "cb", "{\"zh\": \"先试探对方虚实\"}": "cb"}}, "cb": {"type": "combat", "title": {"zh": "决战 · 黑翼机甲·暗枭", "en": "决战 · 黑翼机甲·暗枭", "ja": "决战 · 黑翼机甲·暗枭", "ko": "决战 · 黑翼机甲·暗枭"}, "text": {"zh": "与黑翼的最终对决。对方机甲的核心竟也是一枚太极——你们是同源的宿敌。", "en": "与黑翼的最终对决。对方机甲的核心竟也是一枚太极——你们是同源的宿敌。", "ja": "与黑翼的最终对决。对方机甲的核心竟也是一枚太极——你们是同源的宿敌。", "ko": "与黑翼的最终对决。对方机甲的核心竟也是一枚太极——你们是同源的宿敌。"}, "enemy": {"name": {"zh": "黑翼机甲·暗枭", "en": "黑翼机甲·暗枭", "ja": "黑翼机甲·暗枭", "ko": "黑翼机甲·暗枭"}, "hp": 80, "atk": 18}, "player": {"name": {"zh": "你的龙甲·玄龙", "en": "你的龙甲·玄龙", "ja": "你的龙甲·玄龙", "ko": "你的龙甲·玄龙"}, "hp": 100, "atk": 25}, "victory_to": "sv", "defeat_to": "e4"}, "sv": {"title": {"zh": "凯旋 · 龙甲·东方机甲", "en": "凯旋 · 龙甲·东方机甲", "ja": "凯旋 · 龙甲·东方机甲", "ko": "凯旋 · 龙甲·东方机甲"}, "text": {"zh": "暗枭的核心太极图缓缓熄灭，黑翼的声音从通讯里传来：「你的太极……比我的圆。」\n\n边境的风吹过战场，你的龙甲单膝落地——不是战败，是敬礼。", "en": "暗枭的核心太极图缓缓熄灭，黑翼的声音从通讯里传来：「你的太极……比我的圆。」\n\n边境的风吹过战场，你的龙甲单膝落地——不是战败，是敬礼。", "ja": "暗枭的核心太极图缓缓熄灭，黑翼的声音从通讯里传来：「你的太极……比我的圆。」\n\n边境的风吹过战场，你的龙甲单膝落地——不是战败，是敬礼。", "ko": "暗枭的核心太极图缓缓熄灭，黑翼的声音从通讯里传来：「你的太极……比我的圆。」\n\n边境的风吹过战场，你的龙甲单膝落地——不是战败，是敬礼。"}, "next": {"{\"zh\": \"留在龙甲研究院，守住这份机缘\"}": "e1", "{\"zh\": \"回到人间，把这段经历讲给更多人听\"}": "e2", "{\"zh\": \"踏上远行之路，与同伴一起去看更远的地方\"}": "e3"}}}, "endings": [{"id": "e1", "name": {"zh": "龙甲长鸣", "en": "龙甲长鸣", "ja": "龙甲长鸣", "ko": "龙甲长鸣"}, "text": {"zh": "你击败黑翼，守住边境。老院长在通讯里说：龙甲认主，也认心——你过关了。", "en": "你击败黑翼，守住边境。老院长在通讯里说：龙甲认主，也认心——你过关了。", "ja": "你击败黑翼，守住边境。老院长在通讯里说：龙甲认主，也认心——你过关了。", "ko": "你击败黑翼，守住边境。老院长在通讯里说：龙甲认主，也认心——你过关了。"}}, {"id": "e2", "name": {"zh": "传承秘术", "en": "传承秘术", "ja": "传承秘术", "ko": "传承秘术"}, "text": {"zh": "战后你把古法阵图带回了研究院，新一代驾驶员因此学会了失传的机甲武技。", "en": "战后你把古法阵图带回了研究院，新一代驾驶员因此学会了失传的机甲武技。", "ja": "战后你把古法阵图带回了研究院，新一代驾驶员因此学会了失传的机甲武技。", "ko": "战后你把古法阵图带回了研究院，新一代驾驶员因此学会了失传的机甲武技。"}}, {"id": "e3", "name": {"zh": "并肩远航", "en": "并肩远航", "ja": "并肩远航", "ko": "并肩远航"}, "text": {"zh": "黑翼的机甲在战后熄火，舱门打开——她竟是自己人。你们决定一起守住这条防线。", "en": "黑翼的机甲在战后熄火，舱门打开——她竟是自己人。你们决定一起守住这条防线。", "ja": "黑翼的机甲在战后熄火，舱门打开——她竟是自己人。你们决定一起守住这条防线。", "ko": "黑翼的机甲在战后熄火，舱门打开——她竟是自己人。你们决定一起守住这条防线。"}}, {"id": "e4", "name": {"zh": "龙甲沉寂", "en": "龙甲沉寂", "ja": "龙甲沉寂", "ko": "龙甲沉寂"}, "text": {"zh": "你的龙甲轰然跪地，警报声淹没了一切。\n\n但你没有放弃——这一战，让你看清了对手的破绽。龙魂玉还在发光，下一次，你会赢。", "en": "你的龙甲轰然跪地，警报声淹没了一切。\n\n但你没有放弃——这一战，让你看清了对手的破绽。龙魂玉还在发光，下一次，你会赢。", "ja": "你的龙甲轰然跪地，警报声淹没了一切。\n\n但你没有放弃——这一战，让你看清了对手的破绽。龙魂玉还在发光，下一次，你会赢。", "ko": "你的龙甲轰然跪地，警报声淹没了一切。\n\n但你没有放弃——这一战，让你看清了对手的破绽。龙魂玉还在发光，下一次，你会赢。"}}], "start_id": "s0", "seed": 1, "langs": ["zh", "en", "ja", "ko"]};
+  var UI = {"zh": {"title": "StoryForge · 文化游戏工坊", "game_title": "游戏标题", "subtitle": "文化主题互动叙事 · 由 StoryForge 生成", "start": "开始游戏", "restart": "重新开始", "choice": "你的选择", "ending": "结局", "ending_hint": "你达成了结局", "play_again": "再玩一次", "back_to_title": "返回标题", "lang_switch": "语言 / Language", "story_intro": "故事背景", "characters": "角色", "chapter": "章节", "item_obtained": "获得道具", "exit_hint": "提示：你可以随时关闭本页面，游戏进度不会被保存", "continue": "继续", "battle_attack": "攻击", "battle_charge": "蓄力强击", "battle_defend": "防御", "battle_victory": "胜利！", "battle_defeat": "战败……"}, "en": {"title": "StoryForge · Cultural Game Studio", "game_title": "Game Title", "subtitle": "Interactive cultural narrative · generated by StoryForge", "start": "Start", "restart": "Restart", "choice": "Your Choice", "ending": "Ending", "ending_hint": "Ending reached", "play_again": "Play Again", "back_to_title": "Back to Title", "lang_switch": "语言 / Language", "story_intro": "Story", "characters": "Characters", "chapter": "Chapter", "item_obtained": "Item obtained", "exit_hint": "Tip: you can close this page anytime; progress is not saved", "continue": "Continue", "battle_attack": "Attack", "battle_charge": "Charged Strike", "battle_defend": "Defend", "battle_victory": "Victory!", "battle_defeat": "Defeated..."}, "ja": {"title": "StoryForge · 文化ゲーム工房", "game_title": "ゲームタイトル", "subtitle": "文化テーマのインタラクティブストーリー・StoryForge 生成", "start": "はじめる", "restart": "はじめから", "choice": "あなたの選択", "ending": "エンディング", "ending_hint": "エンディング到達", "play_again": "もう一度遊ぶ", "back_to_title": "タイトルへ", "lang_switch": "言語 / Language", "story_intro": "ストーリー", "characters": "登場人物", "chapter": "章", "item_obtained": "アイテム入手", "exit_hint": "ヒント：いつでもページを閉じて構いません。進行状況は保存されません", "continue": "続ける", "battle_attack": "攻撃", "battle_charge": "チャージ強撃", "battle_defend": "防御", "battle_victory": "勝利！", "battle_defeat": "敗北……"}, "ko": {"title": "StoryForge · 문화 게임 공방", "game_title": "게임 제목", "subtitle": "문화 테마 인터랙티브 스토리 · StoryForge 생성", "start": "시작", "restart": "다시 시작", "choice": "당신의 선택", "ending": "엔딩", "ending_hint": "엔딩 도달", "play_again": "다시 플레이", "back_to_title": "타이틀로", "lang_switch": "언어 / Language", "story_intro": "스토리", "characters": "등장인물", "chapter": "장", "item_obtained": "아이템 획득", "exit_hint": "힌트: 언제든지 페이지를 닫아도 됩니다. 진행 상황은 저장되지 않습니다", "continue": "계속", "battle_attack": "공격", "battle_charge": "차지 강타", "battle_defend": "방어", "battle_victory": "승리!", "battle_defeat": "패배……"}};        // 语言 → UI 文案
+  var LANGS = ["zh", "en", "ja", "ko"];  // 可用语言
+  var state = { lang: "zh", sceneId: null, visited: {} };
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  function t(key) { var m = UI[state.lang]; return (m && m[key]) ? m[key] : key; }
+  function pt(text) {
+    // 多语种文本：{zh:"中文", en:"English", ...} 结构，或 JSON 编码字符串（选项文案），或纯字符串
+    var obj = null;
+    if (typeof text === "string" && text.charAt(0) === "{") {
+      try { obj = JSON.parse(text); } catch (e) { obj = null; }
+    } else if (text && typeof text === "object") {
+      obj = text;
+    }
+    if (obj) {
+      return obj[state.lang] || obj["zh"] || "";
+    }
+    return text || "";
+  }
+
+  function show(id) {
+    ["title-panel", "story-panel", "ending-panel", "combat-panel"].forEach(function (p) {
+      $ (p).classList.toggle("hidden", p !== id);
+    });
+  }
+
+  function updateLangBtns() {
+    var btns = document.querySelectorAll(".lang-btn");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle("active", btns[i].getAttribute("data-lang") === state.lang);
+    }
+  }
+
+  function setLang(lang) {
+    if (LANGS.indexOf(lang) < 0) return;
+    state.lang = lang;
+    updateLangBtns();
+    renderCurrent();
+  }
+
+  function renderCurrent() {
+    if (state.sceneId === null) { renderTitle(); return; }
+    if (state.sceneId.charAt(0) === "e") { renderEnding(state.sceneId); return; }
+    var scene = DATA.scenes[state.sceneId];
+    if (scene && scene.type === "combat") { renderCombat(state.sceneId); return; }
+    renderScene(state.sceneId);
+  }
+
+  function renderTitle() {
+    show("title-panel");
+    $("title-main").textContent = pt(DATA.title);
+    $("title-sub").textContent = pt(DATA.subtitle || "");
+    $("title-intro").textContent = pt(DATA.intro);
+    var cast = [];
+    (DATA.characters || []).forEach(function (c) {
+      cast.push(c.name + (c.desc ? " · " + c.desc : ""));
+    });
+    $("title-cast").textContent = t("characters") + "：" + (cast.join("　") || "-");
+  }
+
+  function renderScene(sid) {
+    var scene = DATA.scenes[sid];
+    if (!scene) { renderEnding("e1"); return; }
+    show("story-panel");
+    state.sceneId = sid;
+    $("chapter-tag").textContent = pt(scene.title);
+    var text = pt(scene.text);
+    $("scene-text").innerHTML = "";
+    var first = document.createElement("span");
+    first.className = "first";
+    first.textContent = text.charAt(0);
+    $("scene-text").appendChild(first);
+    $("scene-text").appendChild(document.createTextNode(text.slice(1)));
+
+    $("choice-label").textContent = t("choice");
+    var wrap = $("choices");
+    wrap.innerHTML = "";
+    var nexts = scene.next || {};
+    var keys = Object.keys(nexts);
+    if (!keys.length) { keys = ["e1"]; }
+    keys.forEach(function (label) {
+      var btn = document.createElement("button");
+      btn.className = "choice-btn";
+      btn.textContent = pt(label);
+      btn.addEventListener("click", function () { goTo(nexts[label]); });
+      wrap.appendChild(btn);
+    });
+    window.scrollTo(0, 0);
+  }
+
+  function renderEnding(eid) {
+    var end = null;
+    (DATA.endings || []).forEach(function (e) { if (e.id === eid) end = e; });
+    if (!end) end = (DATA.endings || [])[0];
+    show("ending-panel");
+    state.sceneId = end.id;
+    $("ending-badge").textContent = t("ending");
+    $("ending-name").textContent = pt(end.name);
+    $("ending-text").textContent = pt(end.text);
+    $("ending-actions").innerHTML = "";
+    var again = document.createElement("button");
+    again.className = "small-btn primary";
+    again.textContent = t("play_again");
+    again.addEventListener("click", function () { state.sceneId = null; renderTitle(); });
+    $("ending-actions").appendChild(again);
+    var home = document.createElement("button");
+    home.className = "small-btn ghost";
+    home.textContent = t("back_to_title");
+    home.addEventListener("click", function () { state.sceneId = null; renderTitle(); });
+    $("ending-actions").appendChild(home);
+    window.scrollTo(0, 0);
+  }
+
+  function goTo(target) {
+    if (!target) { renderEnding("e1"); return; }
+    if (target.charAt(0) === "e") { renderEnding(target); return; }
+    var scene = DATA.scenes[target];
+    if (scene && scene.type === "combat") { renderCombat(target); return; }
+    renderScene(target);
+  }
+
+  // ---------- 回合制战斗 ----------
+  var battle = null;
+
+  function renderCombat(sid) {
+    var scene = DATA.scenes[sid];
+    if (!scene) return;
+    state.sceneId = sid;
+    battle = {
+      player: { hp: scene.player.hp, max: scene.player.hp, atk: scene.player.atk, name: pt(scene.player.name) },
+      enemy: { hp: scene.enemy.hp, max: scene.enemy.hp, atk: scene.enemy.atk, name: pt(scene.enemy.name) },
+      log: [pt(scene.text)],
+      over: false,
+      victoryTo: scene.victory_to, defeatTo: scene.defeat_to
+    };
+    show("combat-panel");
+    renderBattle();
+    window.scrollTo(0, 0);
+  }
+
+  function renderBattle() {
+    if (!battle) return;
+    $("cb-name").textContent = pt(DATA.title) + " · " + t("chapter");
+    $("hud-player-name").textContent = battle.player.name;
+    $("hud-enemy-name").textContent = battle.enemy.name;
+    renderHp($("hp-player-fill"), $("hp-player-num"), battle.player);
+    renderHp($("hp-enemy-fill"), $("hp-enemy-num"), battle.enemy);
+    var log = battle.log.join("\\n");
+    $("combat-log").textContent = log;
+    $("combat-log").scrollTop = $("combat-log").scrollHeight;
+    $("combat-actions").innerHTML = "";
+    if (battle.over) {
+      var btn = document.createElement("button");
+      btn.className = "choice-btn";
+      btn.textContent = t("continue");
+      btn.addEventListener("click", function () {
+        goTo(battle.over ? battle.victoryTo : battle.defeatTo);
+      });
+      $("combat-actions").appendChild(btn);
+    } else {
+      ["attack", "charge", "defend"].forEach(function (act) {
+        var b = document.createElement("button");
+        b.className = "choice-btn";
+        b.textContent = t("battle_" + act);
+        b.addEventListener("click", function () { doAction(act); });
+        $("combat-actions").appendChild(b);
+      });
+    }
+  }
+
+  function renderHp(fillEl, numEl, unit) {
+    var pct = Math.max(0, Math.round(unit.hp / unit.max * 100));
+    fillEl.style.width = pct + "%";
+    fillEl.classList.toggle("low", pct <= 30);
+    numEl.textContent = unit.hp + " / " + unit.max;
+  }
+
+  function doAction(act) {
+    if (!battle || battle.over) return;
+    var line = "";
+    var dmg = Math.max(1, Math.round(battle.player.atk * (0.85 + Math.random() * 0.3)));
+    if (act === "charge") dmg = Math.round(dmg * 1.6);
+    battle.enemy.hp = Math.max(0, battle.enemy.hp - dmg);
+    line = battle.player.name + " " + t("battle_attack") + " " + dmg + " ！";
+    if (act === "charge") line = battle.player.name + " " + t("battle_charge") + "，" + t("battle_attack") + " " + dmg + " ！";
+
+    if (battle.enemy.hp <= 0) {
+      battle.log.push(line);
+      battle.log.push(t("battle_victory"));
+      battle.over = true; battle.win = true;
+      renderBattle(); return;
+    }
+    // 敌方回合
+    var edmg = Math.max(1, Math.round(battle.enemy.atk * (0.8 + Math.random() * 0.3)));
+    if (act === "defend") edmg = Math.round(edmg * 0.4);
+    battle.player.hp = Math.max(0, battle.player.hp - edmg);
+    line += "\\n" + battle.enemy.name + " " + t("battle_attack") + " " + edmg + " ！";
+    if (battle.player.hp <= 0) {
+      battle.log.push(line);
+      battle.log.push(t("battle_defeat"));
+      battle.over = true; battle.win = false;
+      renderBattle(); return;
+    }
+    battle.log.push(line);
+    renderBattle();
+  }
+
+  // 初始化
+  var langBar = $("lang-bar");
+  LANGS.forEach(function (code) {
+    var b = document.createElement("button");
+    b.className = "lang-btn";
+    b.setAttribute("data-lang", code);
+    b.textContent = code.toUpperCase();
+    b.addEventListener("click", function () { setLang(code); });
+    langBar.appendChild(b);
+  });
+  $("start-btn").addEventListener("click", function () { goTo(DATA.start_id || "s0"); });
+  updateLangBtns();
+  renderTitle();
+})();
+
+</script>
+</body>
+</html>
