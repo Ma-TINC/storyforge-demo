@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>龙甲·东方机甲·奇谭 · StoryForge</title>
+<title>龙甲·东方机甲·寻踪 · StoryForge</title>
 <style>
 :root { color-scheme: light; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -129,6 +129,90 @@ body {
   margin-bottom: 16px; white-space: pre-wrap;
 }
 #combat-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* ---- 机甲立绘舞台（V2） ---- */
+#combat-arena {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 16px; min-height: 340px; margin-bottom: 16px;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(120, 90, 40, .18), transparent 62%),
+    linear-gradient(180deg, #e9dcc0, #ddcba9);
+  border: 1px solid rgba(90, 70, 40, .2); border-radius: 6px;
+  padding: 18px 22px 8px; position: relative; overflow: hidden;
+}
+#combat-arena::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 46px;
+  background: linear-gradient(180deg, transparent, rgba(90, 70, 40, .14));
+}
+.mech-wrap { width: 46%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.mech-wrap.enemy { transform: scaleX(-1); }  /* 敌方镜像对位 */
+.mech-name {
+  font-size: 13px; letter-spacing: 2px; color: #7d6242;
+  background: rgba(255, 252, 244, .75); border: 1px solid rgba(90, 70, 40, .2);
+  padding: 3px 12px; border-radius: 12px;
+}
+.mech-wrap svg.mech { width: 100%; height: auto; max-width: 240px; }
+.mech-wrap.enemy svg.mech { transform: scaleX(-1); }  /* 镜像回来，文字不翻转 */
+
+/* 立绘部件动画状态 */
+svg.mech .m-horn { transform-origin: center bottom; transition: transform .25s; }
+svg.mech .m-eye { transition: fill .25s; }
+svg.mech .core-spin { transform-origin: center center; animation: tjspin 3.2s linear infinite; }
+@keyframes tjspin { to { transform: rotate(360deg); } }
+.mech-idle { animation: idle-bob 2.6s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes idle-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+/* 玩家攻击：整体前冲 + 武器挥动 */
+.mech-wrap.player .mech-attack { animation: melee 0.5s ease-out; transform-origin: 60% 90%; }
+@keyframes melee { 0% { transform: translate(0,0) rotate(0); } 40% { transform: translate(18px,-6px) rotate(-8deg); } 100% { transform: translate(0,0) rotate(0); } }
+/* 敌方攻击：整体前冲 */
+.mech-wrap.enemy .mech-attack { animation: e-melee 0.5s ease-out; transform-origin: 40% 90%; }
+@keyframes e-melee { 0% { transform: translate(0,0); } 40% { transform: translate(-18px,-6px); } 100% { transform: translate(0,0); } }
+/* 受击：闪红抖动 */
+.mech-wrap .mech-hit { animation: hit-flash 0.45s; }
+@keyframes hit-flash {
+  0%,100% { filter: none; transform: translate(0,0); }
+  25% { filter: brightness(1.8) sepia(0.5) hue-rotate(-30deg); transform: translate(-4px,2px); }
+  50% { filter: brightness(2) sepia(0.6); transform: translate(4px,-2px); }
+  75% { filter: brightness(1.8) sepia(0.5); transform: translate(-3px,1px); }
+}
+/* 蓄力：核心加速 + 金光 */
+.mech-wrap .mech-charge .core-spin { animation-duration: 0.7s; }
+.mech-wrap .mech-charge { animation: charge-glow 0.8s ease-in-out infinite; }
+@keyframes charge-glow { 0%,100% { filter: drop-shadow(0 0 2px rgba(201,168,106,.6)); } 50% { filter: drop-shadow(0 0 16px rgba(232,217,168,1)); } }
+/* 防御：举盾姿态（轻微后仰） */
+.mech-wrap .mech-defend { animation: guard 0.6s ease-in-out; transform-origin: 50% 100%; }
+@keyframes guard { 0%,100% { transform: translate(0,0) rotate(0); } 50% { transform: translate(0,-6px) rotate(6deg); } }
+/* 胜利/败北姿态 */
+.mech-wrap .mech-win { animation: win-pose 0.7s ease-out forwards; transform-origin: 50% 100%; }
+@keyframes win-pose { 0% { transform: translateY(0); } 60% { transform: translateY(-16px); } 100% { transform: translateY(0) scale(1.04); } }
+.mech-wrap .mech-lose { animation: lose-pose 0.8s ease-in forwards; transform-origin: 50% 100%; }
+@keyframes lose-pose { 0% { transform: rotate(0) translateY(0); } 100% { transform: rotate(-14deg) translateY(22px); filter: grayscale(.6); } }
+
+/* 战斗对话气泡 */
+#combat-dialog {
+  min-height: 46px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
+  background: rgba(255, 252, 244, .92); border: 1px solid rgba(90, 70, 40, .25);
+  border-left: 4px solid #8a6a3f; border-radius: 4px; padding: 10px 16px;
+  font-size: 14.5px; line-height: 1.7; color: #4a3218;
+}
+#combat-dialog .who { flex-shrink: 0; color: #9a7c54; letter-spacing: 2px; font-size: 12.5px; }
+
+/* 道具获得提示 */
+#reward-toast {
+  position: fixed; top: 84px; left: 50%; transform: translateX(-50%) translateY(-16px);
+  background: linear-gradient(160deg, #6b4a26, #4a3218); color: #f3ead8;
+  padding: 12px 26px; border-radius: 6px; font-size: 15px; letter-spacing: 3px;
+  opacity: 0; pointer-events: none; transition: all .35s ease; z-index: 9;
+  box-shadow: 0 8px 22px rgba(60, 40, 15, .4);
+}
+#reward-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* 隐藏结局解锁提示 */
+#sv-hidden-hint {
+  margin-top: 18px; padding: 12px 16px; border: 1px dashed #b08a4a; border-radius: 6px;
+  background: rgba(255, 248, 230, .7); color: #8a5a20; font-size: 14px; line-height: 1.9;
+}
 </style>
 </head>
 <body>
@@ -155,22 +239,29 @@ body {
     </div>
     <div class="panel hidden" id="combat-panel">
       <span id="cb-name" style="display:inline-block;padding:5px 16px;border:1px solid rgba(90,70,40,.3);border-radius:16px;color:#7d6242;font-size:13px;letter-spacing:3px;margin-bottom:18px;"></span>
-      <div id="combat-stage">
-        <div id="combat-hud">
-          <div class="hud-card">
-            <div class="hud-name" id="hud-player-name"></div>
-            <div class="hud-hp-wrap"><div class="hud-hp" id="hp-player-fill"></div></div>
-            <div class="hud-hp-num" id="hp-player-num"></div>
-          </div>
-          <div class="hud-card">
-            <div class="hud-name" id="hud-enemy-name"></div>
-            <div class="hud-hp-wrap"><div class="hud-hp" id="hp-enemy-fill"></div></div>
-            <div class="hud-hp-num" id="hp-enemy-num"></div>
-          </div>
+      <div id="combat-arena">
+        <div class="mech-wrap player">
+          <div class="mech-name" id="hud-player-name"></div>
+          <div id="player-mech"></div>
         </div>
-        <div id="combat-log"></div>
-        <div id="combat-actions"></div>
+        <div class="mech-wrap enemy">
+          <div class="mech-name" id="hud-enemy-name"></div>
+          <div id="enemy-mech"></div>
+        </div>
       </div>
+      <div id="combat-dialog"></div>
+      <div id="combat-hud">
+        <div class="hud-card">
+          <div class="hud-hp-wrap"><div class="hud-hp" id="hp-player-fill"></div></div>
+          <div class="hud-hp-num" id="hp-player-num"></div>
+        </div>
+        <div class="hud-card">
+          <div class="hud-hp-wrap"><div class="hud-hp" id="hp-enemy-fill"></div></div>
+          <div class="hud-hp-num" id="hp-enemy-num"></div>
+        </div>
+      </div>
+      <div id="combat-log"></div>
+      <div id="combat-actions"></div>
     </div>
     <div class="panel hidden" id="ending-panel">
       <span id="ending-badge"></span>
@@ -179,14 +270,15 @@ body {
       <div id="ending-actions"></div>
     </div>
   </div>
+  <div id="reward-toast"></div>
   <div id="footer">StoryForge · 由 AI 智能体生成的文化互动叙事</div>
 </div>
 <script>
 
 (function () {
   "use strict";
-  var DATA = {"title": {"zh": "龙甲·东方机甲·奇谭", "en": "龙甲·东方机甲·奇谭", "ja": "龙甲·东方机甲·奇谭", "ko": "龙甲·东方机甲·奇谭"}, "subtitle": {"zh": "文化主题互动叙事 · 由 StoryForge 生成", "en": "文化主题互动叙事 · 由 StoryForge 生成", "ja": "文化主题互动叙事 · 由 StoryForge 生成", "ko": "文化主题互动叙事 · 由 StoryForge 生成"}, "intro": {"zh": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。", "en": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。", "ja": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。", "ko": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。"}, "world": {"zh": "近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "en": "近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "ja": "近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "ko": "近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。"}, "characters": [{"name": {"zh": "老院长", "en": "老院长", "ja": "老院长", "ko": "老院长"}, "desc": {"zh": "龙甲研究院院长，第一代驾驶员，记得每一台机甲的脾性", "en": "龙甲研究院院长，第一代驾驶员，记得每一台机甲的脾性", "ja": "龙甲研究院院长，第一代驾驶员，记得每一台机甲的脾性", "ko": "龙甲研究院院长，第一代驾驶员，记得每一台机甲的脾性"}}, {"name": {"zh": "灵曦", "en": "灵曦", "ja": "灵曦", "ko": "灵曦"}, "desc": {"zh": "机库主管，能徒手调校机甲关节，话少手快", "en": "机库主管，能徒手调校机甲关节，话少手快", "ja": "机库主管，能徒手调校机甲关节，话少手快", "ko": "机库主管，能徒手调校机甲关节，话少手快"}}, {"name": {"zh": "黑翼", "en": "黑翼", "ja": "黑翼", "ko": "黑翼"}, "desc": {"zh": "神秘的新对手，驾驶着一台来历不明的暗色机甲", "en": "神秘的新对手，驾驶着一台来历不明的暗色机甲", "ja": "神秘的新对手，驾驶着一台来历不明的暗色机甲", "ko": "神秘的新对手，驾驶着一台来历不明的暗色机甲"}}], "scenes": {"s0": {"title": {"zh": "序章 · 龙甲·东方机甲", "en": "序章 · 龙甲·东方机甲", "ja": "序章 · 龙甲·东方机甲", "ko": "序章 · 龙甲·东方机甲"}, "text": {"zh": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。\n\n你在龙甲研究院醒来，晨雾未散。近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "en": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。\n\n你在龙甲研究院醒来，晨雾未散。近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "ja": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。\n\n你在龙甲研究院醒来，晨雾未散。近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "ko": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。\n\n你在龙甲研究院醒来，晨雾未散。近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。"}, "next": {"{\"zh\": \"循着人声走向市集\"}": "s1", "{\"zh\": \"先在原地观望片刻\"}": "s2"}}, "s1": {"title": {"zh": "第二章 · 龙甲认主", "en": "第二章 · 龙甲认主", "ja": "第二章 · 龙甲认主", "ko": "第二章 · 龙甲认主"}, "text": {"zh": "你在龙甲研究院觉醒，太极核心与你的心跳同步——老院长说：它选中了你。", "en": "你在龙甲研究院觉醒，太极核心与你的心跳同步——老院长说：它选中了你。", "ja": "你在龙甲研究院觉醒，太极核心与你的心跳同步——老院长说：它选中了你。", "ko": "你在龙甲研究院觉醒，太极核心与你的心跳同步——老院长说：它选中了你。"}, "next": {"{\"zh\": \"向灵曦请教此中缘由\"}": "s2", "{\"zh\": \"不动声色，静观其变\"}": "s3"}}, "s2": {"title": {"zh": "第三章 · 山河试炼", "en": "第三章 · 山河试炼", "ja": "第三章 · 山河试炼", "ko": "第三章 · 山河试炼"}, "text": {"zh": "训练场上，你的龙甲第一次全功率运转。灵曦的声音从通讯里传来：注意你的能量流转。", "en": "训练场上，你的龙甲第一次全功率运转。灵曦的声音从通讯里传来：注意你的能量流转。", "ja": "训练场上，你的龙甲第一次全功率运转。灵曦的声音从通讯里传来：注意你的能量流转。", "ko": "训练场上，你的龙甲第一次全功率运转。灵曦的声音从通讯里传来：注意你的能量流转。"}, "next": {"{\"zh\": \"请黑翼指点迷津\"}": "s3", "{\"zh\": \"凭直觉走自己的路\"}": "s4"}}, "s3": {"title": {"zh": "第四章 · 边境警报", "en": "第四章 · 边境警报", "ja": "第四章 · 边境警报", "ko": "第四章 · 边境警报"}, "text": {"zh": "边境防线告急，不明机甲入侵。老院长交给你一块龙魂玉：机甲认主，使命也就认了主。", "en": "边境防线告急，不明机甲入侵。老院长交给你一块龙魂玉：机甲认主，使命也就认了主。", "ja": "边境防线告急，不明机甲入侵。老院长交给你一块龙魂玉：机甲认主，使命也就认了主。", "ko": "边境防线告急，不明机甲入侵。老院长交给你一块龙魂玉：机甲认主，使命也就认了主。"}, "next": {"{\"zh\": \"向老院长请教此中缘由\"}": "s4", "{\"zh\": \"不动声色，静观其变\"}": "cb"}}, "s4": {"title": {"zh": "第五章 · 古法破敌", "en": "第五章 · 古法破敌", "ja": "第五章 · 古法破敌", "ko": "第五章 · 古法破敌"}, "text": {"zh": "战斗白热化，你想起古法阵图上的武技——以柔克刚，四两拨千斤。", "en": "战斗白热化，你想起古法阵图上的武技——以柔克刚，四两拨千斤。", "ja": "战斗白热化，你想起古法阵图上的武技——以柔克刚，四两拨千斤。", "ko": "战斗白热化，你想起古法阵图上的武技——以柔克刚，四两拨千斤。"}, "next": {"{\"zh\": \"取出随身信物，坦诚相告\"}": "cb", "{\"zh\": \"先试探对方虚实\"}": "cb"}}, "cb": {"type": "combat", "title": {"zh": "决战 · 黑翼机甲·暗枭", "en": "决战 · 黑翼机甲·暗枭", "ja": "决战 · 黑翼机甲·暗枭", "ko": "决战 · 黑翼机甲·暗枭"}, "text": {"zh": "与黑翼的最终对决。对方机甲的核心竟也是一枚太极——你们是同源的宿敌。", "en": "与黑翼的最终对决。对方机甲的核心竟也是一枚太极——你们是同源的宿敌。", "ja": "与黑翼的最终对决。对方机甲的核心竟也是一枚太极——你们是同源的宿敌。", "ko": "与黑翼的最终对决。对方机甲的核心竟也是一枚太极——你们是同源的宿敌。"}, "enemy": {"name": {"zh": "黑翼机甲·暗枭", "en": "黑翼机甲·暗枭", "ja": "黑翼机甲·暗枭", "ko": "黑翼机甲·暗枭"}, "hp": 80, "atk": 18}, "player": {"name": {"zh": "你的龙甲·玄龙", "en": "你的龙甲·玄龙", "ja": "你的龙甲·玄龙", "ko": "你的龙甲·玄龙"}, "hp": 100, "atk": 25}, "victory_to": "sv", "defeat_to": "e4"}, "sv": {"title": {"zh": "凯旋 · 龙甲·东方机甲", "en": "凯旋 · 龙甲·东方机甲", "ja": "凯旋 · 龙甲·东方机甲", "ko": "凯旋 · 龙甲·东方机甲"}, "text": {"zh": "暗枭的核心太极图缓缓熄灭，黑翼的声音从通讯里传来：「你的太极……比我的圆。」\n\n边境的风吹过战场，你的龙甲单膝落地——不是战败，是敬礼。", "en": "暗枭的核心太极图缓缓熄灭，黑翼的声音从通讯里传来：「你的太极……比我的圆。」\n\n边境的风吹过战场，你的龙甲单膝落地——不是战败，是敬礼。", "ja": "暗枭的核心太极图缓缓熄灭，黑翼的声音从通讯里传来：「你的太极……比我的圆。」\n\n边境的风吹过战场，你的龙甲单膝落地——不是战败，是敬礼。", "ko": "暗枭的核心太极图缓缓熄灭，黑翼的声音从通讯里传来：「你的太极……比我的圆。」\n\n边境的风吹过战场，你的龙甲单膝落地——不是战败，是敬礼。"}, "next": {"{\"zh\": \"留在龙甲研究院，守住这份机缘\"}": "e1", "{\"zh\": \"回到人间，把这段经历讲给更多人听\"}": "e2", "{\"zh\": \"踏上远行之路，与同伴一起去看更远的地方\"}": "e3"}}}, "endings": [{"id": "e1", "name": {"zh": "龙甲长鸣", "en": "龙甲长鸣", "ja": "龙甲长鸣", "ko": "龙甲长鸣"}, "text": {"zh": "你击败黑翼，守住边境。老院长在通讯里说：龙甲认主，也认心——你过关了。", "en": "你击败黑翼，守住边境。老院长在通讯里说：龙甲认主，也认心——你过关了。", "ja": "你击败黑翼，守住边境。老院长在通讯里说：龙甲认主，也认心——你过关了。", "ko": "你击败黑翼，守住边境。老院长在通讯里说：龙甲认主，也认心——你过关了。"}}, {"id": "e2", "name": {"zh": "传承秘术", "en": "传承秘术", "ja": "传承秘术", "ko": "传承秘术"}, "text": {"zh": "战后你把古法阵图带回了研究院，新一代驾驶员因此学会了失传的机甲武技。", "en": "战后你把古法阵图带回了研究院，新一代驾驶员因此学会了失传的机甲武技。", "ja": "战后你把古法阵图带回了研究院，新一代驾驶员因此学会了失传的机甲武技。", "ko": "战后你把古法阵图带回了研究院，新一代驾驶员因此学会了失传的机甲武技。"}}, {"id": "e3", "name": {"zh": "并肩远航", "en": "并肩远航", "ja": "并肩远航", "ko": "并肩远航"}, "text": {"zh": "黑翼的机甲在战后熄火，舱门打开——她竟是自己人。你们决定一起守住这条防线。", "en": "黑翼的机甲在战后熄火，舱门打开——她竟是自己人。你们决定一起守住这条防线。", "ja": "黑翼的机甲在战后熄火，舱门打开——她竟是自己人。你们决定一起守住这条防线。", "ko": "黑翼的机甲在战后熄火，舱门打开——她竟是自己人。你们决定一起守住这条防线。"}}, {"id": "e4", "name": {"zh": "龙甲沉寂", "en": "龙甲沉寂", "ja": "龙甲沉寂", "ko": "龙甲沉寂"}, "text": {"zh": "你的龙甲轰然跪地，警报声淹没了一切。\n\n但你没有放弃——这一战，让你看清了对手的破绽。龙魂玉还在发光，下一次，你会赢。", "en": "你的龙甲轰然跪地，警报声淹没了一切。\n\n但你没有放弃——这一战，让你看清了对手的破绽。龙魂玉还在发光，下一次，你会赢。", "ja": "你的龙甲轰然跪地，警报声淹没了一切。\n\n但你没有放弃——这一战，让你看清了对手的破绽。龙魂玉还在发光，下一次，你会赢。", "ko": "你的龙甲轰然跪地，警报声淹没了一切。\n\n但你没有放弃——这一战，让你看清了对手的破绽。龙魂玉还在发光，下一次，你会赢。"}}], "start_id": "s0", "seed": 1, "langs": ["zh", "en", "ja", "ko"]};
-  var UI = {"zh": {"title": "StoryForge · 文化游戏工坊", "game_title": "游戏标题", "subtitle": "文化主题互动叙事 · 由 StoryForge 生成", "start": "开始游戏", "restart": "重新开始", "choice": "你的选择", "ending": "结局", "ending_hint": "你达成了结局", "play_again": "再玩一次", "back_to_title": "返回标题", "lang_switch": "语言 / Language", "story_intro": "故事背景", "characters": "角色", "chapter": "章节", "item_obtained": "获得道具", "exit_hint": "提示：你可以随时关闭本页面，游戏进度不会被保存", "continue": "继续", "battle_attack": "攻击", "battle_charge": "蓄力强击", "battle_defend": "防御", "battle_victory": "胜利！", "battle_defeat": "战败……"}, "en": {"title": "StoryForge · Cultural Game Studio", "game_title": "Game Title", "subtitle": "Interactive cultural narrative · generated by StoryForge", "start": "Start", "restart": "Restart", "choice": "Your Choice", "ending": "Ending", "ending_hint": "Ending reached", "play_again": "Play Again", "back_to_title": "Back to Title", "lang_switch": "语言 / Language", "story_intro": "Story", "characters": "Characters", "chapter": "Chapter", "item_obtained": "Item obtained", "exit_hint": "Tip: you can close this page anytime; progress is not saved", "continue": "Continue", "battle_attack": "Attack", "battle_charge": "Charged Strike", "battle_defend": "Defend", "battle_victory": "Victory!", "battle_defeat": "Defeated..."}, "ja": {"title": "StoryForge · 文化ゲーム工房", "game_title": "ゲームタイトル", "subtitle": "文化テーマのインタラクティブストーリー・StoryForge 生成", "start": "はじめる", "restart": "はじめから", "choice": "あなたの選択", "ending": "エンディング", "ending_hint": "エンディング到達", "play_again": "もう一度遊ぶ", "back_to_title": "タイトルへ", "lang_switch": "言語 / Language", "story_intro": "ストーリー", "characters": "登場人物", "chapter": "章", "item_obtained": "アイテム入手", "exit_hint": "ヒント：いつでもページを閉じて構いません。進行状況は保存されません", "continue": "続ける", "battle_attack": "攻撃", "battle_charge": "チャージ強撃", "battle_defend": "防御", "battle_victory": "勝利！", "battle_defeat": "敗北……"}, "ko": {"title": "StoryForge · 문화 게임 공방", "game_title": "게임 제목", "subtitle": "문화 테마 인터랙티브 스토리 · StoryForge 생성", "start": "시작", "restart": "다시 시작", "choice": "당신의 선택", "ending": "엔딩", "ending_hint": "엔딩 도달", "play_again": "다시 플레이", "back_to_title": "타이틀로", "lang_switch": "언어 / Language", "story_intro": "스토리", "characters": "등장인물", "chapter": "장", "item_obtained": "아이템 획득", "exit_hint": "힌트: 언제든지 페이지를 닫아도 됩니다. 진행 상황은 저장되지 않습니다", "continue": "계속", "battle_attack": "공격", "battle_charge": "차지 강타", "battle_defend": "방어", "battle_victory": "승리!", "battle_defeat": "패배……"}};        // 语言 → UI 文案
+  var DATA = {"title": {"zh": "龙甲·东方机甲·寻踪", "en": "龙甲·东方机甲·寻踪", "ja": "龙甲·东方机甲·寻踪", "ko": "龙甲·东方机甲·寻踪"}, "subtitle": {"zh": "文化主题互动叙事 · 由 StoryForge 生成", "en": "文化主题互动叙事 · 由 StoryForge 生成", "ja": "文化主题互动叙事 · 由 StoryForge 生成", "ko": "文化主题互动叙事 · 由 StoryForge 生成"}, "intro": {"zh": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。", "en": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。", "ja": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。", "ko": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。"}, "world": {"zh": "近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "en": "近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "ja": "近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "ko": "近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。"}, "characters": [{"name": {"zh": "老院长", "en": "老院长", "ja": "老院长", "ko": "老院长"}, "desc": {"zh": "龙甲研究院院长，第一代驾驶员，记得每一台机甲的脾性", "en": "龙甲研究院院长，第一代驾驶员，记得每一台机甲的脾性", "ja": "龙甲研究院院长，第一代驾驶员，记得每一台机甲的脾性", "ko": "龙甲研究院院长，第一代驾驶员，记得每一台机甲的脾性"}}, {"name": {"zh": "灵曦", "en": "灵曦", "ja": "灵曦", "ko": "灵曦"}, "desc": {"zh": "机库主管，能徒手调校机甲关节，话少手快", "en": "机库主管，能徒手调校机甲关节，话少手快", "ja": "机库主管，能徒手调校机甲关节，话少手快", "ko": "机库主管，能徒手调校机甲关节，话少手快"}}, {"name": {"zh": "黑翼", "en": "黑翼", "ja": "黑翼", "ko": "黑翼"}, "desc": {"zh": "神秘的新对手，驾驶着一台来历不明的暗色机甲", "en": "神秘的新对手，驾驶着一台来历不明的暗色机甲", "ja": "神秘的新对手，驾驶着一台来历不明的暗色机甲", "ko": "神秘的新对手，驾驶着一台来历不明的暗色机甲"}}], "scenes": {"s0": {"title": {"zh": "序章 · 龙甲·东方机甲", "en": "序章 · 龙甲·东方机甲", "ja": "序章 · 龙甲·东方机甲", "ko": "序章 · 龙甲·东方机甲"}, "text": {"zh": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。\n\n你在龙甲研究院醒来，晨雾未散。近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "en": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。\n\n你在龙甲研究院醒来，晨雾未散。近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "ja": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。\n\n你在龙甲研究院醒来，晨雾未散。近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。", "ko": "当上古机关术遇上未来科技，东方文明造出了自己的机甲——龙甲。以龙为魂、以机关为骨、以太极图为能量核心，每一台龙甲都承载着一位驾驶者的信念。如今，边境警报再起，而你，被选中成为新的龙甲驾驶员。\n\n你在龙甲研究院醒来，晨雾未散。近未来的东方。高耸的都市与古老的山河并存，龙甲研究院坐落在群山之间。"}, "next": {"{\"zh\": \"循着人声走向市集\"}": "s1", "{\"zh\": \"先在原地观望片刻\"}": "s2"}}, "s1": {"title": {"zh": "第二章 · 龙甲认主", "en": "第二章 · 龙甲认主", "ja": "第二章 · 龙甲认主", "ko": "第二章 · 龙甲认主"}, "text": {"zh": "机库的灯依次亮起，你第一次看清这台龙甲——玄龙。龙角如双月弯刀，覆鳞肩甲层叠如瓦，胸口太极核心泛着幽蓝。老院长说：它选中了你。", "en": "机库的灯依次亮起，你第一次看清这台龙甲——玄龙。龙角如双月弯刀，覆鳞肩甲层叠如瓦，胸口太极核心泛着幽蓝。老院长说：它选中了你。", "ja": "机库的灯依次亮起，你第一次看清这台龙甲——玄龙。龙角如双月弯刀，覆鳞肩甲层叠如瓦，胸口太极核心泛着幽蓝。老院长说：它选中了你。", "ko": "机库的灯依次亮起，你第一次看清这台龙甲——玄龙。龙角如双月弯刀，覆鳞肩甲层叠如瓦，胸口太极核心泛着幽蓝。老院长说：它选中了你。"}, "next": {"{\"zh\": \"请灵曦指点迷津\"}": "s2", "{\"zh\": \"凭直觉走自己的路\"}": "s3"}}, "s2": {"title": {"zh": "第三章 · 山河试炼", "en": "第三章 · 山河试炼", "ja": "第三章 · 山河试炼", "ko": "第三章 · 山河试炼"}, "text": {"zh": "训练场上，你的龙甲第一次全功率运转。灵曦的声音从通讯里传来：注意你的能量流转，太极核心会随呼吸涨落。", "en": "训练场上，你的龙甲第一次全功率运转。灵曦的声音从通讯里传来：注意你的能量流转，太极核心会随呼吸涨落。", "ja": "训练场上，你的龙甲第一次全功率运转。灵曦的声音从通讯里传来：注意你的能量流转，太极核心会随呼吸涨落。", "ko": "训练场上，你的龙甲第一次全功率运转。灵曦的声音从通讯里传来：注意你的能量流转，太极核心会随呼吸涨落。"}, "next": {"{\"zh\": \"向黑翼请教此中缘由\"}": "s3", "{\"zh\": \"不动声色，静观其变\"}": "s4"}}, "s3": {"title": {"zh": "第四章 · 边境警报", "en": "第四章 · 边境警报", "ja": "第四章 · 边境警报", "ko": "第四章 · 边境警报"}, "text": {"zh": "边境防线告急，不明机甲入侵。老院长把一枚温热的龙魂玉放进你手心：机甲认主，使命也就认了主。", "en": "边境防线告急，不明机甲入侵。老院长把一枚温热的龙魂玉放进你手心：机甲认主，使命也就认了主。", "ja": "边境防线告急，不明机甲入侵。老院长把一枚温热的龙魂玉放进你手心：机甲认主，使命也就认了主。", "ko": "边境防线告急，不明机甲入侵。老院长把一枚温热的龙魂玉放进你手心：机甲认主，使命也就认了主。"}, "next": {"{\"zh\": \"与老院长结伴而行\"}": "s4", "{\"zh\": \"独自沿山路而行\"}": "cb1"}}, "s4": {"title": {"zh": "第五章 · 古法破敌", "en": "第五章 · 古法破敌", "ja": "第五章 · 古法破敌", "ko": "第五章 · 古法破敌"}, "text": {"zh": "古法阵阁深处，你找到一卷阵图——以柔克刚，四两拨千斤。你把阵图收进怀中，决战在即。", "en": "古法阵阁深处，你找到一卷阵图——以柔克刚，四两拨千斤。你把阵图收进怀中，决战在即。", "ja": "古法阵阁深处，你找到一卷阵图——以柔克刚，四两拨千斤。你把阵图收进怀中，决战在即。", "ko": "古法阵阁深处，你找到一卷阵图——以柔克刚，四两拨千斤。你把阵图收进怀中，决战在即。"}, "next": {"{\"zh\": \"取出随身信物，坦诚相告\"}": "cb1", "{\"zh\": \"先试探对方虚实\"}": "cb1"}}, "cb1": {"type": "combat", "title": {"zh": "试炼 · 铁壁金乌", "en": "试炼 · 铁壁金乌", "ja": "试炼 · 铁壁金乌", "ko": "试炼 · 铁壁金乌"}, "text": {"zh": "训练场中央，铁壁靶机·金乌缓缓升起。灵曦的声音传来：先用它热热身，摸清它的路数。", "en": "训练场中央，铁壁靶机·金乌缓缓升起。灵曦的声音传来：先用它热热身，摸清它的路数。", "ja": "训练场中央，铁壁靶机·金乌缓缓升起。灵曦的声音传来：先用它热热身，摸清它的路数。", "ko": "训练场中央，铁壁靶机·金乌缓缓升起。灵曦的声音传来：先用它热热身，摸清它的路数。"}, "enemy": {"name": {"zh": "铁壁靶机·金乌", "en": "铁壁靶机·金乌", "ja": "铁壁靶机·金乌", "ko": "铁壁靶机·金乌"}, "hp": 60, "atk": 12}, "player": {"name": {"zh": "玄龙", "en": "玄龙", "ja": "玄龙", "ko": "玄龙"}, "hp": 100, "atk": 25}, "victory_to": "cb2", "defeat_to": "e4", "reward": "太极核心", "dialogues": {"start": ["灵曦：『充能完毕。别急，先摸清靶机的路数。』", "靶机金乌：『模拟外敌机甲，参数校准中。』"], "attack": ["你挥出龙牙刀：『破！』", "灵曦：『稳住左臂！肩甲别抬太高！』"], "charge": ["太极核心高速旋转，金光大盛。", "刀锋凝出青色锋芒：『蓄力！』"], "defend": ["你横刀格挡：『来！』", "金铁交鸣，火星四溅。"], "enemy_turn": ["靶机重拳砸来！", "关节金属嘶鸣，地面裂开细纹。"], "victory": ["『试炼通过。太极核心已与你的呼吸同步。』", "你取下机甲里的太极核心，它在掌心轻轻发烫。"], "defeat": ["『先停手，回来整备。』", "机库灯光下，你看见玄龙胸口的太极暗淡了一瞬。"]}, "mechs": {"zh": {"player": {"name": "玄龙", "title": "东方龙甲 · 玄龙", "palette": {"armor": "#2f6f5f", "armor_dark": "#1e4f42", "armor_light": "#4a9a86", "gold": "#c9a86a", "gold_light": "#e8d9a8", "accent": "#a8443a", "eye": "#ffb84d", "core_dark": "#22303c", "core_light": "#f5f0e6", "scarf": "#a8443a"}, "style": {"horns": "dragon", "shoulders": "scale", "weapon": "blade", "core": "taiji", "scarf": true}}, "enemy": {"name": "暗枭", "title": "黑翼机甲 · 暗枭", "palette": {"armor": "#3a2f4f", "armor_dark": "#241c36", "armor_light": "#5c4a7a", "gold": "#8a6fbf", "gold_light": "#c3b0e0", "accent": "#7a1f2b", "eye": "#e0483f", "core_dark": "#1a141f", "core_light": "#d9c9e8", "scarf": null}, "style": {"horns": "owl", "shoulders": "feather", "weapon": "claw", "core": "taiji_dark", "scarf": false}}}, "en": {"player": {"name": "玄龙", "title": "东方龙甲 · 玄龙", "palette": {"armor": "#2f6f5f", "armor_dark": "#1e4f42", "armor_light": "#4a9a86", "gold": "#c9a86a", "gold_light": "#e8d9a8", "accent": "#a8443a", "eye": "#ffb84d", "core_dark": "#22303c", "core_light": "#f5f0e6", "scarf": "#a8443a"}, "style": {"horns": "dragon", "shoulders": "scale", "weapon": "blade", "core": "taiji", "scarf": true}}, "enemy": {"name": "暗枭", "title": "黑翼机甲 · 暗枭", "palette": {"armor": "#3a2f4f", "armor_dark": "#241c36", "armor_light": "#5c4a7a", "gold": "#8a6fbf", "gold_light": "#c3b0e0", "accent": "#7a1f2b", "eye": "#e0483f", "core_dark": "#1a141f", "core_light": "#d9c9e8", "scarf": null}, "style": {"horns": "owl", "shoulders": "feather", "weapon": "claw", "core": "taiji_dark", "scarf": false}}}, "ja": {"player": {"name": "玄龙", "title": "东方龙甲 · 玄龙", "palette": {"armor": "#2f6f5f", "armor_dark": "#1e4f42", "armor_light": "#4a9a86", "gold": "#c9a86a", "gold_light": "#e8d9a8", "accent": "#a8443a", "eye": "#ffb84d", "core_dark": "#22303c", "core_light": "#f5f0e6", "scarf": "#a8443a"}, "style": {"horns": "dragon", "shoulders": "scale", "weapon": "blade", "core": "taiji", "scarf": true}}, "enemy": {"name": "暗枭", "title": "黑翼机甲 · 暗枭", "palette": {"armor": "#3a2f4f", "armor_dark": "#241c36", "armor_light": "#5c4a7a", "gold": "#8a6fbf", "gold_light": "#c3b0e0", "accent": "#7a1f2b", "eye": "#e0483f", "core_dark": "#1a141f", "core_light": "#d9c9e8", "scarf": null}, "style": {"horns": "owl", "shoulders": "feather", "weapon": "claw", "core": "taiji_dark", "scarf": false}}}, "ko": {"player": {"name": "玄龙", "title": "东方龙甲 · 玄龙", "palette": {"armor": "#2f6f5f", "armor_dark": "#1e4f42", "armor_light": "#4a9a86", "gold": "#c9a86a", "gold_light": "#e8d9a8", "accent": "#a8443a", "eye": "#ffb84d", "core_dark": "#22303c", "core_light": "#f5f0e6", "scarf": "#a8443a"}, "style": {"horns": "dragon", "shoulders": "scale", "weapon": "blade", "core": "taiji", "scarf": true}}, "enemy": {"name": "暗枭", "title": "黑翼机甲 · 暗枭", "palette": {"armor": "#3a2f4f", "armor_dark": "#241c36", "armor_light": "#5c4a7a", "gold": "#8a6fbf", "gold_light": "#c3b0e0", "accent": "#7a1f2b", "eye": "#e0483f", "core_dark": "#1a141f", "core_light": "#d9c9e8", "scarf": null}, "style": {"horns": "owl", "shoulders": "feather", "weapon": "claw", "core": "taiji_dark", "scarf": false}}}}, "mech_svg": {"player": "<svg class=\"mech\" viewBox=\"0 0 260 330\" xmlns=\"http://www.w3.org/2000/svg\"><g class=\"mech-idle\"><path d=\"M92,125 C52,131 42,157 64,195 C72,205 78,203 80,191 C66,163 70,139 96,133 Z\" fill=\"#a8443a\" class=\"m-scarf-p\"/><polygon points=\"86,275 116,263 118,309 90,315\" fill=\"#1e4f42\" class=\"m-leg-p\"/><polygon points=\"144,263 174,275 170,315 142,309\" fill=\"#1e4f42\" class=\"m-leg-p\"/><polygon points=\"86,317 92,341 72,349 68,323\" fill=\"#2f6f5f\" class=\"m-leg-p\"/><polygon points=\"168,317 174,341 192,349 188,323\" fill=\"#2f6f5f\" class=\"m-leg-p\"/><polygon points=\"90,109 170,109 178,217 82,217\" fill=\"#2f6f5f\" class=\"m-torso-p\"/><polygon points=\"96,115 164,115 170,211 90,211\" fill=\"#4a9a86\" class=\"m-torso-p\"/><polygon points=\"82,209 178,209 174,223 86,223\" fill=\"#c9a86a\" class=\"m-torso-p\"/><path d=\"M78,151 C64,125 74,99 92,95 C80,111 80,133 90,149 Z\" fill=\"#4a9a86\" class=\"m-shld-p\"/><path d=\"M182,151 C196,125 186,99 168,95 C180,111 180,133 170,149 Z\" fill=\"#4a9a86\" class=\"m-shld-p\"/><polygon points=\"104,67 156,67 152,133 108,133\" fill=\"#2f6f5f\" class=\"m-head-p\"/><polygon points=\"110,73 150,73 146,127 114,127\" fill=\"#1e4f42\" class=\"m-head-p\"/><polygon points=\"115,91 128,91 128,101 115,101\" fill=\"#ffb84d\" class=\"m-eye-p\"/><polygon points=\"132,91 145,91 145,101 132,101\" fill=\"#ffb84d\" class=\"m-eye-p\"/><path d=\"M124,69 C100,51 86,35 78,23 L86,31 C92,43 106,55 124,67 Z\" fill=\"#c9a86a\" class=\"m-horn-p\"/><path d=\"M136,69 C160,51 174,35 182,23 L174,31 C168,43 154,55 136,67 Z\" fill=\"#c9a86a\" class=\"m-horn-p\"/><path d=\"M120,63 C112,49 108,41 104,33 L110,41 C114,51 118,59 120,63 Z\" fill=\"#e8d9a8\" class=\"m-horn-p\"/><g class=\"core-spin\"><clipPath id=\"tj-p\"><circle cx=\"130\" cy=\"163\" r=\"16\"/></clipPath><circle cx=\"130\" cy=\"163\" r=\"16\" fill=\"#f5f0e6\" stroke=\"#22303c\" stroke-width=\"1.5\" class=\"tj-ring-p\"/><path d=\"M114,163 a16,16 0 0 1 32,0 a8.0,8.0 0 0 1 -16,0 z\" fill=\"#22303c\"/><path d=\"M114,163 a16,16 0 0 0 32,0 a8.0,8.0 0 0 0 -16,0 z\" fill=\"#f5f0e6\"/><circle cx=\"130\" cy=\"155.0\" r=\"2.0\" fill=\"#f5f0e6\"/><circle cx=\"130\" cy=\"171.0\" r=\"2.0\" fill=\"#22303c\"/></g><path d=\"M158,65 C176,83 188,109 194,141 L186,139 C180,111 170,87 154,73 Z\" fill=\"#e8d9a8\" class=\"m-weapon-p\"/><path d=\"M152,69 L164,95 L156,97 L146,73 Z\" fill=\"#c9a86a\" class=\"m-weapon-p\"/></g></svg>", "enemy": "<svg class=\"mech\" viewBox=\"0 0 260 330\" xmlns=\"http://www.w3.org/2000/svg\"><g class=\"mech-idle\"><polygon points=\"86,275 116,263 118,309 90,315\" fill=\"#241c36\" class=\"m-leg-e\"/><polygon points=\"144,263 174,275 170,315 142,309\" fill=\"#241c36\" class=\"m-leg-e\"/><polygon points=\"86,317 92,341 72,349 68,323\" fill=\"#3a2f4f\" class=\"m-leg-e\"/><polygon points=\"168,317 174,341 192,349 188,323\" fill=\"#3a2f4f\" class=\"m-leg-e\"/><polygon points=\"90,109 170,109 178,217 82,217\" fill=\"#3a2f4f\" class=\"m-torso-e\"/><polygon points=\"96,115 164,115 170,211 90,211\" fill=\"#5c4a7a\" class=\"m-torso-e\"/><polygon points=\"82,209 178,209 174,223 86,223\" fill=\"#8a6fbf\" class=\"m-torso-e\"/><path d=\"M82,151 C64,121 56,101 50,91 L64,99 C68,115 74,131 78,145 Z\" fill=\"#5c4a7a\" class=\"m-shld-e\"/><path d=\"M72,145 C54,115 46,95 40,85 L54,93 C58,109 64,125 68,139 Z\" fill=\"#241c36\" class=\"m-shld-e\"/><path d=\"M62,139 C44,109 36,89 30,79 L44,87 C48,103 54,119 58,133 Z\" fill=\"#5c4a7a\" class=\"m-shld-e\"/><path d=\"M52,135 C34,105 26,85 20,75 L34,83 C38,99 44,115 48,129 Z\" fill=\"#241c36\" class=\"m-shld-e\"/><path d=\"M178,151 C196,121 204,101 210,91 L196,99 C192,115 186,131 182,145 Z\" fill=\"#5c4a7a\" class=\"m-shld-e\"/><path d=\"M188,145 C206,115 214,95 220,85 L206,93 C202,109 196,125 192,139 Z\" fill=\"#241c36\" class=\"m-shld-e\"/><path d=\"M198,139 C216,109 224,89 230,79 L216,87 C212,103 206,119 202,133 Z\" fill=\"#5c4a7a\" class=\"m-shld-e\"/><path d=\"M208,135 C226,105 234,85 240,75 L226,83 C222,99 216,115 212,129 Z\" fill=\"#241c36\" class=\"m-shld-e\"/><polygon points=\"104,67 156,67 152,133 108,133\" fill=\"#3a2f4f\" class=\"m-head-e\"/><polygon points=\"110,73 150,73 146,127 114,127\" fill=\"#241c36\" class=\"m-head-e\"/><polygon points=\"115,91 128,91 128,101 115,101\" fill=\"#e0483f\" class=\"m-eye-e\"/><polygon points=\"132,91 145,91 145,101 132,101\" fill=\"#e0483f\" class=\"m-eye-e\"/><path d=\"M126,69 L106,39 L114,51 L104,63 Z\" fill=\"#241c36\" class=\"m-horn-e\"/><path d=\"M134,69 L154,39 L146,51 L156,63 Z\" fill=\"#241c36\" class=\"m-horn-e\"/><g class=\"core-spin\"><clipPath id=\"tj-e\"><circle cx=\"130\" cy=\"163\" r=\"16\"/></clipPath><circle cx=\"130\" cy=\"163\" r=\"16\" fill=\"#d9c9e8\" stroke=\"#1a141f\" stroke-width=\"1.5\" class=\"tj-ring-e\"/><path d=\"M114,163 a16,16 0 0 1 32,0 a8.0,8.0 0 0 1 -16,0 z\" fill=\"#1a141f\"/><path d=\"M114,163 a16,16 0 0 0 32,0 a8.0,8.0 0 0 0 -16,0 z\" fill=\"#d9c9e8\"/><circle cx=\"130\" cy=\"155.0\" r=\"2.0\" fill=\"#d9c9e8\"/><circle cx=\"130\" cy=\"171.0\" r=\"2.0\" fill=\"#1a141f\"/></g><path d=\"M142,127 C160,105 166,83 162,63 L156,81 C154,99 150,117 146,131 Z\" fill=\"#c3b0e0\" class=\"m-weapon-e\"/><path d=\"M152,127 C170,105 176,83 172,63 L166,81 C164,99 160,117 156,131 Z\" fill=\"#c3b0e0\" class=\"m-weapon-e\"/><path d=\"M162,127 C180,105 186,83 182,63 L176,81 C174,99 170,117 166,131 Z\" fill=\"#c3b0e0\" class=\"m-weapon-e\"/></g></svg>"}}, "cb2": {"type": "combat", "title": {"zh": "决战 · 黑翼暗枭", "en": "决战 · 黑翼暗枭", "ja": "决战 · 黑翼暗枭", "ko": "决战 · 黑翼暗枭"}, "text": {"zh": "边境线上，黑翼机甲·暗枭悬停于残阳中。对方机甲的核心竟也是一枚太极——你们是同源的宿敌。", "en": "边境线上，黑翼机甲·暗枭悬停于残阳中。对方机甲的核心竟也是一枚太极——你们是同源的宿敌。", "ja": "边境线上，黑翼机甲·暗枭悬停于残阳中。对方机甲的核心竟也是一枚太极——你们是同源的宿敌。", "ko": "边境线上，黑翼机甲·暗枭悬停于残阳中。对方机甲的核心竟也是一枚太极——你们是同源的宿敌。"}, "enemy": {"name": {"zh": "黑翼机甲·暗枭", "en": "黑翼机甲·暗枭", "ja": "黑翼机甲·暗枭", "ko": "黑翼机甲·暗枭"}, "hp": 80, "atk": 18}, "player": {"name": {"zh": "玄龙", "en": "玄龙", "ja": "玄龙", "ko": "玄龙"}, "hp": 100, "atk": 25}, "victory_to": "sv", "defeat_to": "e4", "dialogues": {"start": ["黑翼：『你终于来了。同源的太极，分个高下。』", "暗枭的翼甲张开，残阳在刃上流动。"], "attack": ["玄龙龙牙刀劈出半月弧光：『守住边境，就是守住了来路！』", "黑翼侧身闪开：『不错，再来。』"], "charge": ["太极核心全速运转，龙吟穿透战场。", "黑翼冷笑：『亮出你的杀招吧。』"], "defend": ["你举刀格挡，金铁交鸣声震四野。", "黑翼：『防御不错，但一味防守赢不了。』"], "enemy_turn": ["暗枭俯冲而至，鸦爪刃划破风声！", "黑翼：『你犹豫了——在想什么？』"], "victory": ["暗枭的核心太极图缓缓熄灭。黑翼的声音从通讯里传来：「你的太极……比我的圆。」", "边境的风吹过战场，玄龙单膝落地——不是战败，是敬礼。"], "defeat": ["玄龙轰然跪地，警报声淹没一切。", "龙魂玉还在发光：『下一次，你会赢。』"]}, "mechs": {"zh": {"player": {"name": "玄龙", "title": "东方龙甲 · 玄龙", "palette": {"armor": "#2f6f5f", "armor_dark": "#1e4f42", "armor_light": "#4a9a86", "gold": "#c9a86a", "gold_light": "#e8d9a8", "accent": "#a8443a", "eye": "#ffb84d", "core_dark": "#22303c", "core_light": "#f5f0e6", "scarf": "#a8443a"}, "style": {"horns": "dragon", "shoulders": "scale", "weapon": "blade", "core": "taiji", "scarf": true}}, "enemy": {"name": "暗枭", "title": "黑翼机甲 · 暗枭", "palette": {"armor": "#3a2f4f", "armor_dark": "#241c36", "armor_light": "#5c4a7a", "gold": "#8a6fbf", "gold_light": "#c3b0e0", "accent": "#7a1f2b", "eye": "#e0483f", "core_dark": "#1a141f", "core_light": "#d9c9e8", "scarf": null}, "style": {"horns": "owl", "shoulders": "feather", "weapon": "claw", "core": "taiji_dark", "scarf": false}}}, "en": {"player": {"name": "玄龙", "title": "东方龙甲 · 玄龙", "palette": {"armor": "#2f6f5f", "armor_dark": "#1e4f42", "armor_light": "#4a9a86", "gold": "#c9a86a", "gold_light": "#e8d9a8", "accent": "#a8443a", "eye": "#ffb84d", "core_dark": "#22303c", "core_light": "#f5f0e6", "scarf": "#a8443a"}, "style": {"horns": "dragon", "shoulders": "scale", "weapon": "blade", "core": "taiji", "scarf": true}}, "enemy": {"name": "暗枭", "title": "黑翼机甲 · 暗枭", "palette": {"armor": "#3a2f4f", "armor_dark": "#241c36", "armor_light": "#5c4a7a", "gold": "#8a6fbf", "gold_light": "#c3b0e0", "accent": "#7a1f2b", "eye": "#e0483f", "core_dark": "#1a141f", "core_light": "#d9c9e8", "scarf": null}, "style": {"horns": "owl", "shoulders": "feather", "weapon": "claw", "core": "taiji_dark", "scarf": false}}}, "ja": {"player": {"name": "玄龙", "title": "东方龙甲 · 玄龙", "palette": {"armor": "#2f6f5f", "armor_dark": "#1e4f42", "armor_light": "#4a9a86", "gold": "#c9a86a", "gold_light": "#e8d9a8", "accent": "#a8443a", "eye": "#ffb84d", "core_dark": "#22303c", "core_light": "#f5f0e6", "scarf": "#a8443a"}, "style": {"horns": "dragon", "shoulders": "scale", "weapon": "blade", "core": "taiji", "scarf": true}}, "enemy": {"name": "暗枭", "title": "黑翼机甲 · 暗枭", "palette": {"armor": "#3a2f4f", "armor_dark": "#241c36", "armor_light": "#5c4a7a", "gold": "#8a6fbf", "gold_light": "#c3b0e0", "accent": "#7a1f2b", "eye": "#e0483f", "core_dark": "#1a141f", "core_light": "#d9c9e8", "scarf": null}, "style": {"horns": "owl", "shoulders": "feather", "weapon": "claw", "core": "taiji_dark", "scarf": false}}}, "ko": {"player": {"name": "玄龙", "title": "东方龙甲 · 玄龙", "palette": {"armor": "#2f6f5f", "armor_dark": "#1e4f42", "armor_light": "#4a9a86", "gold": "#c9a86a", "gold_light": "#e8d9a8", "accent": "#a8443a", "eye": "#ffb84d", "core_dark": "#22303c", "core_light": "#f5f0e6", "scarf": "#a8443a"}, "style": {"horns": "dragon", "shoulders": "scale", "weapon": "blade", "core": "taiji", "scarf": true}}, "enemy": {"name": "暗枭", "title": "黑翼机甲 · 暗枭", "palette": {"armor": "#3a2f4f", "armor_dark": "#241c36", "armor_light": "#5c4a7a", "gold": "#8a6fbf", "gold_light": "#c3b0e0", "accent": "#7a1f2b", "eye": "#e0483f", "core_dark": "#1a141f", "core_light": "#d9c9e8", "scarf": null}, "style": {"horns": "owl", "shoulders": "feather", "weapon": "claw", "core": "taiji_dark", "scarf": false}}}}, "mech_svg": {"player": "<svg class=\"mech\" viewBox=\"0 0 260 330\" xmlns=\"http://www.w3.org/2000/svg\"><g class=\"mech-idle\"><path d=\"M92,125 C52,131 42,157 64,195 C72,205 78,203 80,191 C66,163 70,139 96,133 Z\" fill=\"#a8443a\" class=\"m-scarf-p\"/><polygon points=\"86,275 116,263 118,309 90,315\" fill=\"#1e4f42\" class=\"m-leg-p\"/><polygon points=\"144,263 174,275 170,315 142,309\" fill=\"#1e4f42\" class=\"m-leg-p\"/><polygon points=\"86,317 92,341 72,349 68,323\" fill=\"#2f6f5f\" class=\"m-leg-p\"/><polygon points=\"168,317 174,341 192,349 188,323\" fill=\"#2f6f5f\" class=\"m-leg-p\"/><polygon points=\"90,109 170,109 178,217 82,217\" fill=\"#2f6f5f\" class=\"m-torso-p\"/><polygon points=\"96,115 164,115 170,211 90,211\" fill=\"#4a9a86\" class=\"m-torso-p\"/><polygon points=\"82,209 178,209 174,223 86,223\" fill=\"#c9a86a\" class=\"m-torso-p\"/><path d=\"M78,151 C64,125 74,99 92,95 C80,111 80,133 90,149 Z\" fill=\"#4a9a86\" class=\"m-shld-p\"/><path d=\"M182,151 C196,125 186,99 168,95 C180,111 180,133 170,149 Z\" fill=\"#4a9a86\" class=\"m-shld-p\"/><polygon points=\"104,67 156,67 152,133 108,133\" fill=\"#2f6f5f\" class=\"m-head-p\"/><polygon points=\"110,73 150,73 146,127 114,127\" fill=\"#1e4f42\" class=\"m-head-p\"/><polygon points=\"115,91 128,91 128,101 115,101\" fill=\"#ffb84d\" class=\"m-eye-p\"/><polygon points=\"132,91 145,91 145,101 132,101\" fill=\"#ffb84d\" class=\"m-eye-p\"/><path d=\"M124,69 C100,51 86,35 78,23 L86,31 C92,43 106,55 124,67 Z\" fill=\"#c9a86a\" class=\"m-horn-p\"/><path d=\"M136,69 C160,51 174,35 182,23 L174,31 C168,43 154,55 136,67 Z\" fill=\"#c9a86a\" class=\"m-horn-p\"/><path d=\"M120,63 C112,49 108,41 104,33 L110,41 C114,51 118,59 120,63 Z\" fill=\"#e8d9a8\" class=\"m-horn-p\"/><g class=\"core-spin\"><clipPath id=\"tj-p\"><circle cx=\"130\" cy=\"163\" r=\"16\"/></clipPath><circle cx=\"130\" cy=\"163\" r=\"16\" fill=\"#f5f0e6\" stroke=\"#22303c\" stroke-width=\"1.5\" class=\"tj-ring-p\"/><path d=\"M114,163 a16,16 0 0 1 32,0 a8.0,8.0 0 0 1 -16,0 z\" fill=\"#22303c\"/><path d=\"M114,163 a16,16 0 0 0 32,0 a8.0,8.0 0 0 0 -16,0 z\" fill=\"#f5f0e6\"/><circle cx=\"130\" cy=\"155.0\" r=\"2.0\" fill=\"#f5f0e6\"/><circle cx=\"130\" cy=\"171.0\" r=\"2.0\" fill=\"#22303c\"/></g><path d=\"M158,65 C176,83 188,109 194,141 L186,139 C180,111 170,87 154,73 Z\" fill=\"#e8d9a8\" class=\"m-weapon-p\"/><path d=\"M152,69 L164,95 L156,97 L146,73 Z\" fill=\"#c9a86a\" class=\"m-weapon-p\"/></g></svg>", "enemy": "<svg class=\"mech\" viewBox=\"0 0 260 330\" xmlns=\"http://www.w3.org/2000/svg\"><g class=\"mech-idle\"><polygon points=\"86,275 116,263 118,309 90,315\" fill=\"#241c36\" class=\"m-leg-e\"/><polygon points=\"144,263 174,275 170,315 142,309\" fill=\"#241c36\" class=\"m-leg-e\"/><polygon points=\"86,317 92,341 72,349 68,323\" fill=\"#3a2f4f\" class=\"m-leg-e\"/><polygon points=\"168,317 174,341 192,349 188,323\" fill=\"#3a2f4f\" class=\"m-leg-e\"/><polygon points=\"90,109 170,109 178,217 82,217\" fill=\"#3a2f4f\" class=\"m-torso-e\"/><polygon points=\"96,115 164,115 170,211 90,211\" fill=\"#5c4a7a\" class=\"m-torso-e\"/><polygon points=\"82,209 178,209 174,223 86,223\" fill=\"#8a6fbf\" class=\"m-torso-e\"/><path d=\"M82,151 C64,121 56,101 50,91 L64,99 C68,115 74,131 78,145 Z\" fill=\"#5c4a7a\" class=\"m-shld-e\"/><path d=\"M72,145 C54,115 46,95 40,85 L54,93 C58,109 64,125 68,139 Z\" fill=\"#241c36\" class=\"m-shld-e\"/><path d=\"M62,139 C44,109 36,89 30,79 L44,87 C48,103 54,119 58,133 Z\" fill=\"#5c4a7a\" class=\"m-shld-e\"/><path d=\"M52,135 C34,105 26,85 20,75 L34,83 C38,99 44,115 48,129 Z\" fill=\"#241c36\" class=\"m-shld-e\"/><path d=\"M178,151 C196,121 204,101 210,91 L196,99 C192,115 186,131 182,145 Z\" fill=\"#5c4a7a\" class=\"m-shld-e\"/><path d=\"M188,145 C206,115 214,95 220,85 L206,93 C202,109 196,125 192,139 Z\" fill=\"#241c36\" class=\"m-shld-e\"/><path d=\"M198,139 C216,109 224,89 230,79 L216,87 C212,103 206,119 202,133 Z\" fill=\"#5c4a7a\" class=\"m-shld-e\"/><path d=\"M208,135 C226,105 234,85 240,75 L226,83 C222,99 216,115 212,129 Z\" fill=\"#241c36\" class=\"m-shld-e\"/><polygon points=\"104,67 156,67 152,133 108,133\" fill=\"#3a2f4f\" class=\"m-head-e\"/><polygon points=\"110,73 150,73 146,127 114,127\" fill=\"#241c36\" class=\"m-head-e\"/><polygon points=\"115,91 128,91 128,101 115,101\" fill=\"#e0483f\" class=\"m-eye-e\"/><polygon points=\"132,91 145,91 145,101 132,101\" fill=\"#e0483f\" class=\"m-eye-e\"/><path d=\"M126,69 L106,39 L114,51 L104,63 Z\" fill=\"#241c36\" class=\"m-horn-e\"/><path d=\"M134,69 L154,39 L146,51 L156,63 Z\" fill=\"#241c36\" class=\"m-horn-e\"/><g class=\"core-spin\"><clipPath id=\"tj-e\"><circle cx=\"130\" cy=\"163\" r=\"16\"/></clipPath><circle cx=\"130\" cy=\"163\" r=\"16\" fill=\"#d9c9e8\" stroke=\"#1a141f\" stroke-width=\"1.5\" class=\"tj-ring-e\"/><path d=\"M114,163 a16,16 0 0 1 32,0 a8.0,8.0 0 0 1 -16,0 z\" fill=\"#1a141f\"/><path d=\"M114,163 a16,16 0 0 0 32,0 a8.0,8.0 0 0 0 -16,0 z\" fill=\"#d9c9e8\"/><circle cx=\"130\" cy=\"155.0\" r=\"2.0\" fill=\"#d9c9e8\"/><circle cx=\"130\" cy=\"171.0\" r=\"2.0\" fill=\"#1a141f\"/></g><path d=\"M142,127 C160,105 166,83 162,63 L156,81 C154,99 150,117 146,131 Z\" fill=\"#c3b0e0\" class=\"m-weapon-e\"/><path d=\"M152,127 C170,105 176,83 172,63 L166,81 C164,99 160,117 156,131 Z\" fill=\"#c3b0e0\" class=\"m-weapon-e\"/><path d=\"M162,127 C180,105 186,83 182,63 L176,81 C174,99 170,117 166,131 Z\" fill=\"#c3b0e0\" class=\"m-weapon-e\"/></g></svg>"}}, "sv": {"title": {"zh": "凯旋 · 龙甲·东方机甲", "en": "凯旋 · 龙甲·东方机甲", "ja": "凯旋 · 龙甲·东方机甲", "ko": "凯旋 · 龙甲·东方机甲"}, "text": {"zh": "暗枭的核心太极图缓缓熄灭，黑翼的声音从通讯里传来：「你的太极……比我的圆。」\n\n边境的风吹过战场，你的龙甲单膝落地——不是战败，是敬礼。", "en": "暗枭的核心太极图缓缓熄灭，黑翼的声音从通讯里传来：「你的太极……比我的圆。」\n\n边境的风吹过战场，你的龙甲单膝落地——不是战败，是敬礼。", "ja": "暗枭的核心太极图缓缓熄灭，黑翼的声音从通讯里传来：「你的太极……比我的圆。」\n\n边境的风吹过战场，你的龙甲单膝落地——不是战败，是敬礼。", "ko": "暗枭的核心太极图缓缓熄灭，黑翼的声音从通讯里传来：「你的太极……比我的圆。」\n\n边境的风吹过战场，你的龙甲单膝落地——不是战败，是敬礼。"}, "next": {"{\"zh\": \"留在龙甲研究院，守住这份机缘\"}": "e1", "{\"zh\": \"回到人间，把这段经历讲给更多人听\"}": "e2", "{\"zh\": \"踏上远行之路，与同伴一起去看更远的地方\"}": "e3"}, "hidden_ending": {"eid": "e5", "name": {"zh": "龙魂觉醒", "en": "龙魂觉醒", "ja": "龙魂觉醒", "ko": "龙魂觉醒"}, "text": {"zh": "太极核心、龙魂玉、古法阵图三物合一，玄龙发出前所未有的龙吟。这一战，你打出了机甲史书上没有的一页——东方龙甲，自此有了自己的传说。", "en": "太极核心、龙魂玉、古法阵图三物合一，玄龙发出前所未有的龙吟。这一战，你打出了机甲史书上没有的一页——东方龙甲，自此有了自己的传说。", "ja": "太极核心、龙魂玉、古法阵图三物合一，玄龙发出前所未有的龙吟。这一战，你打出了机甲史书上没有的一页——东方龙甲，自此有了自己的传说。", "ko": "太极核心、龙魂玉、古法阵图三物合一，玄龙发出前所未有的龙吟。这一战，你打出了机甲史书上没有的一页——东方龙甲，自此有了自己的传说。"}, "requires": ["太极核心", "龙魂玉", "古法阵图"]}}}, "endings": [{"id": "e1", "name": {"zh": "龙甲长鸣", "en": "龙甲长鸣", "ja": "龙甲长鸣", "ko": "龙甲长鸣"}, "text": {"zh": "你击败黑翼，守住边境。老院长在通讯里说：龙甲认主，也认心——你过关了。", "en": "你击败黑翼，守住边境。老院长在通讯里说：龙甲认主，也认心——你过关了。", "ja": "你击败黑翼，守住边境。老院长在通讯里说：龙甲认主，也认心——你过关了。", "ko": "你击败黑翼，守住边境。老院长在通讯里说：龙甲认主，也认心——你过关了。"}}, {"id": "e2", "name": {"zh": "传承秘术", "en": "传承秘术", "ja": "传承秘术", "ko": "传承秘术"}, "text": {"zh": "战后你把古法阵图带回研究院，新一代驾驶员因此学会了失传的机甲武技。", "en": "战后你把古法阵图带回研究院，新一代驾驶员因此学会了失传的机甲武技。", "ja": "战后你把古法阵图带回研究院，新一代驾驶员因此学会了失传的机甲武技。", "ko": "战后你把古法阵图带回研究院，新一代驾驶员因此学会了失传的机甲武技。"}}, {"id": "e3", "name": {"zh": "并肩远航", "en": "并肩远航", "ja": "并肩远航", "ko": "并肩远航"}, "text": {"zh": "黑翼的机甲在战后熄火，舱门打开——她竟是自己人。你们决定一起守住这条防线。", "en": "黑翼的机甲在战后熄火，舱门打开——她竟是自己人。你们决定一起守住这条防线。", "ja": "黑翼的机甲在战后熄火，舱门打开——她竟是自己人。你们决定一起守住这条防线。", "ko": "黑翼的机甲在战后熄火，舱门打开——她竟是自己人。你们决定一起守住这条防线。"}}, {"id": "e5", "name": {"zh": "龙魂觉醒", "en": "龙魂觉醒", "ja": "龙魂觉醒", "ko": "龙魂觉醒"}, "text": {"zh": "太极核心、龙魂玉、古法阵图三物合一，玄龙发出前所未有的龙吟。这一战，你打出了机甲史书上没有的一页——东方龙甲，自此有了自己的传说。", "en": "太极核心、龙魂玉、古法阵图三物合一，玄龙发出前所未有的龙吟。这一战，你打出了机甲史书上没有的一页——东方龙甲，自此有了自己的传说。", "ja": "太极核心、龙魂玉、古法阵图三物合一，玄龙发出前所未有的龙吟。这一战，你打出了机甲史书上没有的一页——东方龙甲，自此有了自己的传说。", "ko": "太极核心、龙魂玉、古法阵图三物合一，玄龙发出前所未有的龙吟。这一战，你打出了机甲史书上没有的一页——东方龙甲，自此有了自己的传说。"}}, {"id": "e4", "name": {"zh": "龙甲沉寂", "en": "龙甲沉寂", "ja": "龙甲沉寂", "ko": "龙甲沉寂"}, "text": {"zh": "你的龙甲轰然跪地，警报声淹没了一切。\n\n但你没有放弃——这一战，让你看清了对手的破绽。龙魂玉还在发光，下一次，你会赢。", "en": "你的龙甲轰然跪地，警报声淹没了一切。\n\n但你没有放弃——这一战，让你看清了对手的破绽。龙魂玉还在发光，下一次，你会赢。", "ja": "你的龙甲轰然跪地，警报声淹没了一切。\n\n但你没有放弃——这一战，让你看清了对手的破绽。龙魂玉还在发光，下一次，你会赢。", "ko": "你的龙甲轰然跪地，警报声淹没了一切。\n\n但你没有放弃——这一战，让你看清了对手的破绽。龙魂玉还在发光，下一次，你会赢。"}}], "start_id": "s0", "seed": 2026, "item_beats": {"s3": {"name": {"zh": "龙魂玉", "en": "龙魂玉", "ja": "龙魂玉", "ko": "龙魂玉"}, "desc": {"zh": "", "en": "", "ja": "", "ko": ""}}, "s4": {"name": {"zh": "古法阵图", "en": "古法阵图", "ja": "古法阵图", "ko": "古法阵图"}, "desc": {"zh": "", "en": "", "ja": "", "ko": ""}}}, "langs": ["zh", "en", "ja", "ko"]};
+  var UI = {"zh": {"title": "StoryForge · 文化游戏工坊", "game_title": "游戏标题", "subtitle": "文化主题互动叙事 · 由 StoryForge 生成", "start": "开始游戏", "restart": "重新开始", "choice": "你的选择", "ending": "结局", "ending_hint": "你达成了结局", "play_again": "再玩一次", "back_to_title": "返回标题", "lang_switch": "语言 / Language", "story_intro": "故事背景", "characters": "角色", "chapter": "章节", "item_obtained": "获得道具", "exit_hint": "提示：你可以随时关闭本页面，游戏进度不会被保存", "continue": "继续", "battle_attack": "攻击", "battle_charge": "蓄力强击", "battle_defend": "防御", "battle_victory": "胜利！", "battle_defeat": "战败……", "battle_ready": "战斗开始", "battle_reward": "获得", "battle_say": "说", "hidden_ending_hint": "✨ 你集齐了三件信物，龙魂之力在胸中翻涌——你发现了不一样的选择……"}, "en": {"title": "StoryForge · Cultural Game Studio", "game_title": "Game Title", "subtitle": "Interactive cultural narrative · generated by StoryForge", "start": "Start", "restart": "Restart", "choice": "Your Choice", "ending": "Ending", "ending_hint": "Ending reached", "play_again": "Play Again", "back_to_title": "Back to Title", "lang_switch": "语言 / Language", "story_intro": "Story", "characters": "Characters", "chapter": "Chapter", "item_obtained": "Item obtained", "exit_hint": "Tip: you can close this page anytime; progress is not saved", "continue": "Continue", "battle_attack": "Attack", "battle_charge": "Charged Strike", "battle_defend": "Defend", "battle_victory": "Victory!", "battle_defeat": "Defeated...", "battle_ready": "Battle Start", "battle_reward": "Obtained", "battle_say": "says", "hidden_ending_hint": "✨ You have gathered all three relics — the dragon soul surges within you. A new path opens..."}, "ja": {"title": "StoryForge · 文化ゲーム工房", "game_title": "ゲームタイトル", "subtitle": "文化テーマのインタラクティブストーリー・StoryForge 生成", "start": "はじめる", "restart": "はじめから", "choice": "あなたの選択", "ending": "エンディング", "ending_hint": "エンディング到達", "play_again": "もう一度遊ぶ", "back_to_title": "タイトルへ", "lang_switch": "言語 / Language", "story_intro": "ストーリー", "characters": "登場人物", "chapter": "章", "item_obtained": "アイテム入手", "exit_hint": "ヒント：いつでもページを閉じて構いません。進行状況は保存されません", "continue": "続ける", "battle_attack": "攻撃", "battle_charge": "チャージ強撃", "battle_defend": "防御", "battle_victory": "勝利！", "battle_defeat": "敗北……", "battle_ready": "戦闘開始", "battle_reward": "獲得", "battle_say": "言う", "hidden_ending_hint": "✨ 三つの宝物を集め、龍魂の力が胸に溢れる——新たな選択肢が開かれた……"}, "ko": {"title": "StoryForge · 문화 게임 공방", "game_title": "게임 제목", "subtitle": "문화 테마 인터랙티브 스토리 · StoryForge 생성", "start": "시작", "restart": "다시 시작", "choice": "당신의 선택", "ending": "엔딩", "ending_hint": "엔딩 도달", "play_again": "다시 플레이", "back_to_title": "타이틀로", "lang_switch": "언어 / Language", "story_intro": "스토리", "characters": "등장인물", "chapter": "장", "item_obtained": "아이템 획득", "exit_hint": "힌트: 언제든지 페이지를 닫아도 됩니다. 진행 상황은 저장되지 않습니다", "continue": "계속", "battle_attack": "공격", "battle_charge": "차지 강타", "battle_defend": "방어", "battle_victory": "승리!", "battle_defeat": "패배……", "battle_ready": "전투 시작", "battle_reward": "획득", "battle_say": "말하다", "hidden_ending_hint": "✨ 세 가지 신물을 모아 용혼의 힘이 가슴 속에서 꿈틀거린다——새로운 선택이 열렸다……"}};        // 语言 → UI 文案
   var LANGS = ["zh", "en", "ja", "ko"];  // 可用语言
   var state = { lang: "zh", sceneId: null, visited: {} };
 
@@ -231,7 +323,9 @@ body {
     if (state.sceneId === null) { renderTitle(); return; }
     if (state.sceneId.charAt(0) === "e") { renderEnding(state.sceneId); return; }
     var scene = DATA.scenes[state.sceneId];
-    if (scene && scene.type === "combat") { renderCombat(state.sceneId); return; }
+    if (!scene) { renderEnding("e1"); return; }
+    if (scene.type === "combat") { renderCombat(state.sceneId); return; }
+    if (scene.type === "climax") { renderClimax(state.sceneId); return; }
     renderScene(state.sceneId);
   }
 
@@ -304,12 +398,53 @@ body {
     if (!target) { renderEnding("e1"); return; }
     if (target.charAt(0) === "e") { renderEnding(target); return; }
     var scene = DATA.scenes[target];
-    if (scene && scene.type === "combat") { renderCombat(target); return; }
+    if (!scene) { renderEnding("e1"); return; }
+    if (scene.type === "combat") { renderCombat(target); return; }
+    if (scene.type === "climax") { renderClimax(target); return; }
     renderScene(target);
   }
 
-  // ---------- 回合制战斗 ----------
+  // ---------- 回合制战斗（V2：立绘 + 对话 + 动画） ----------
   var battle = null;
+  var inventory = [];
+
+  function say(who, text) {
+    // 战斗对话气泡
+    var d = $("combat-dialog");
+    d.innerHTML = "";
+    var w = document.createElement("span");
+    w.className = "who";
+    w.textContent = who;
+    var t = document.createElement("span");
+    t.textContent = text;
+    d.appendChild(w);
+    d.appendChild(t);
+  }
+
+  function dialog(key, fallback) {
+    // 从战斗对话库取随机一句（多语种）
+    var arr = battle.dialogue[key];
+    if (!arr || !arr.length) return fallback;
+    var s = arr[Math.floor(Math.random() * arr.length)];
+    if (typeof s === "object") { return pt(s); }
+    return s;
+  }
+
+  function setPose(wrap, cls) {
+    var svg = wrap.querySelector("svg");
+    if (!svg) return;
+    var g = svg.querySelector("g");
+    if (!g) return;
+    g.className.baseVal = cls;
+    setTimeout(function () { g.className.baseVal = "mech-idle"; }, 620);
+  }
+
+  function showReward(name) {
+    var t = $("reward-toast");
+    t.textContent = t("battle_reward") + "：" + name;
+    t.classList.add("show");
+    setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
 
   function renderCombat(sid) {
     var scene = DATA.scenes[sid];
@@ -318,12 +453,28 @@ body {
     battle = {
       player: { hp: scene.player.hp, max: scene.player.hp, atk: scene.player.atk, name: pt(scene.player.name) },
       enemy: { hp: scene.enemy.hp, max: scene.enemy.hp, atk: scene.enemy.atk, name: pt(scene.enemy.name) },
-      log: [pt(scene.text)],
-      over: false,
-      victoryTo: scene.victory_to, defeatTo: scene.defeat_to
+      log: [],
+      over: false, win: false,
+      victoryTo: scene.victory_to, defeatTo: scene.defeat_to,
+      reward: scene.reward || null,
+      dialogue: scene.dialogues || {},
     };
+    // 立绘
+    var pm = $("player-mech"), em = $("enemy-mech");
+    if (scene.mech_svg) {
+      pm.innerHTML = scene.mech_svg.player;
+      em.innerHTML = scene.mech_svg.enemy;
+      pm.querySelector("svg").setAttribute("class", "mech");
+      em.querySelector("svg").setAttribute("class", "mech");
+    }
     show("combat-panel");
     renderBattle();
+    // 开场对话
+    var sd = battle.dialogue.start;
+    if (sd && sd.length) {
+      var s = sd[0];
+      say(pt(scene.player.name), (typeof s === "object" ? pt(s) : s));
+    }
     window.scrollTo(0, 0);
   }
 
@@ -342,9 +493,7 @@ body {
       var btn = document.createElement("button");
       btn.className = "choice-btn";
       btn.textContent = t("continue");
-      btn.addEventListener("click", function () {
-        goTo(battle.over ? battle.victoryTo : battle.defeatTo);
-      });
+      btn.addEventListener("click", function () { battleContinue(); });
       $("combat-actions").appendChild(btn);
     } else {
       ["attack", "charge", "defend"].forEach(function (act) {
@@ -355,6 +504,20 @@ body {
         $("combat-actions").appendChild(b);
       });
     }
+  }
+
+  function battleContinue() {
+    if (battle.reward && battle.win) {
+      inventory.push(battle.reward);
+      showReward(pt({ zh: battle.reward }) || battle.reward);
+    }
+    var target = battle.win ? battle.victoryTo : battle.defeatTo;
+    if (!target) { renderEnding("e1"); return; }
+    if (target.charAt(0) === "e") { renderEnding(target); return; }
+    var scene = DATA.scenes[target];
+    if (scene && scene.type === "combat") { renderCombat(target); return; }
+    if (scene && scene.type === "climax") { renderClimax(target); return; }
+    renderScene(target);
   }
 
   function renderHp(fillEl, numEl, unit) {
@@ -370,28 +533,106 @@ body {
     var dmg = Math.max(1, Math.round(battle.player.atk * (0.85 + Math.random() * 0.3)));
     if (act === "charge") dmg = Math.round(dmg * 1.6);
     battle.enemy.hp = Math.max(0, battle.enemy.hp - dmg);
+    // 玩家立绘动画
+    setPose(document.querySelector(".mech-wrap.player"), act === "attack" ? "mech-attack" : (act === "charge" ? "mech-charge" : "mech-defend"));
+    say(battle.player.name, dialog(act, ""));
     line = battle.player.name + " " + t("battle_attack") + " " + dmg + " ！";
     if (act === "charge") line = battle.player.name + " " + t("battle_charge") + "，" + t("battle_attack") + " " + dmg + " ！";
 
     if (battle.enemy.hp <= 0) {
+      setPose(document.querySelector(".mech-wrap.enemy"), "mech-lose");
+      setPose(document.querySelector(".mech-wrap.player"), "mech-win");
       battle.log.push(line);
-      battle.log.push(t("battle_victory"));
+      battle.log.push(dialog("victory", t("battle_victory")));
       battle.over = true; battle.win = true;
       renderBattle(); return;
     }
     // 敌方回合
+    setPose(document.querySelector(".mech-wrap.enemy"), "mech-attack");
+    setTimeout(function () {
+      setPose(document.querySelector(".mech-wrap.player"), "mech-hit");
+    }, 60);
     var edmg = Math.max(1, Math.round(battle.enemy.atk * (0.8 + Math.random() * 0.3)));
     if (act === "defend") edmg = Math.round(edmg * 0.4);
     battle.player.hp = Math.max(0, battle.player.hp - edmg);
+    say(battle.enemy.name, dialog("enemy_turn", ""));
     line += "\\n" + battle.enemy.name + " " + t("battle_attack") + " " + edmg + " ！";
     if (battle.player.hp <= 0) {
+      setPose(document.querySelector(".mech-wrap.player"), "mech-lose");
+      setPose(document.querySelector(".mech-wrap.enemy"), "mech-win");
       battle.log.push(line);
-      battle.log.push(t("battle_defeat"));
+      battle.log.push(dialog("defeat", t("battle_defeat")));
       battle.over = true; battle.win = false;
       renderBattle(); return;
     }
     battle.log.push(line);
     renderBattle();
+  }
+
+  // ---------- 凯旋抉择场景（含隐藏结局解锁） ----------
+  function renderClimax(sid) {
+    var scene = DATA.scenes[sid];
+    if (!scene) { renderEnding("e1"); return; }
+    show("story-panel");
+    state.sceneId = sid;
+    $("chapter-tag").textContent = pt(scene.title);
+    var text = pt(scene.text);
+    $("scene-text").innerHTML = "";
+    var first = document.createElement("span");
+    first.className = "first";
+    first.textContent = text.charAt(0);
+    $("scene-text").appendChild(first);
+    $("scene-text").appendChild(document.createTextNode(text.slice(1)));
+
+    $("choice-label").textContent = t("choice");
+    var wrap = $("choices");
+    wrap.innerHTML = "";
+    var nexts = scene.next || {};
+    var keys = Object.keys(nexts);
+    // 隐藏结局：道具集齐时追加选项
+    var he = scene.hidden_ending;
+    var hiddenUnlocked = false;
+    if (he && he.requires) {
+      hiddenUnlocked = he.requires.every(function (name) { return inventory.indexOf(name) >= 0; });
+      if (hiddenUnlocked) {
+        keys.push(jsonKey(he));
+      }
+    }
+    keys.forEach(function (label) {
+      var btn = document.createElement("button");
+      btn.className = "choice-btn";
+      if (he && label === jsonKey(he)) {
+        btn.textContent = hiddenLabel(he);
+      } else {
+        btn.textContent = pt(label);
+      }
+      btn.addEventListener("click", function () {
+        var target = nexts[label];
+        if (!target && he) { target = he.eid; }
+        goTo(target);
+      });
+      wrap.appendChild(btn);
+    });
+    // 隐藏结局提示条
+    var hint = $("sv-hidden-hint");
+    if (hint) hint.remove();
+    if (he) {
+      var hv = document.createElement("div");
+      hv.id = "sv-hidden-hint";
+      hv.textContent = hiddenUnlocked
+        ? t("hidden_ending_hint")
+        : "🔒 " + t("hidden_ending_hint");
+      wrap.parentNode.appendChild(hv);
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function jsonKey(he) {
+    return "__hidden__" + he.eid;
+  }
+
+  function hiddenLabel(he) {
+    return "🌟 " + pt(he.name);
   }
 
   // 初始化
